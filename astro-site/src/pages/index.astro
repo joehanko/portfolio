@@ -46,10 +46,10 @@ const otherProjects = projects.filter((project) => project !== featured);
           {featured && (
             <article class:list={["featured", { "with-image": featured.cover }]}>
               <div class="feature-copy">
-                <p class="eyebrow">Featured case study <span>{featured.year}</span></p>
+                <p class="eyebrow">Featured project <span>{featured.year}</span></p>
                 <h2>{featured.title}</h2>
                 <p class="feature-summary">{featured.summary}</p>
-                <a class="feature-link" href={`/projects/${featured.slug}/`}>Read the case study <span aria-hidden="true">↗</span></a>
+                <a class="feature-link" href={`/projects/${featured.slug}/`}>View project <span aria-hidden="true">↗</span></a>
               </div>
               {featured.cover && (
                 <figure class="feature-figure">

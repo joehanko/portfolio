@@ -64,8 +64,8 @@ const headings = project.getHeadings().filter((heading) => heading.depth === 2);
         <div class:list={["content-layout", { "with-contents": headings.length > 0 || gallery.length > 0 }]}>
           {(headings.length > 0 || gallery.length > 0) && (
             <aside>
-              <nav aria-label="Case study contents" class="contents">
-                <p class="eyebrow">In this case study</p>
+              <nav aria-label="Project contents" class="contents">
+                <p class="eyebrow">In this project</p>
                 <ul>
                   {headings.map((heading) => <li><a href={`#${heading.slug}`}>{heading.text}</a></li>)}
                   {gallery.length > 0 && <li><a href="#gallery-title">Project gallery</a></li>}
