@@ -1,0 +1,206 @@
+
+---
+export function getStaticPaths() {
+  const files = import.meta.glob(
+    "../../content/projects/*.md",
+    { eager: true }
+  );
+
+  return Object.entries(files).map(([path, project]) => ({
+    params: {
+      slug: path.split("/").pop().replace(".md", ""),
+    },
+    props: { project },
+  }));
+}
+
+const { project } = Astro.props;
+const { frontmatter, Content } = project;
+const { title, category, year, summary, cover } = frontmatter;
+---
+
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content={summary} />
+    <title>{title} — Joe Hanko</title>
+  </head>
+
+  <body>
+    <div class="container">
+      <header>
+        <a href="/" class="brand">Joe Hanko.</a>
+        <a href="/#work" class="back">← All projects</a>
+      </header>
+
+      <main>
+        <section class="intro">
+          <div class="metadata">
+            <span>{category}</span>
+            <span>{year}</span>
+          </div>
+
+          <h1>{title}</h1>
+          <p class="summary">{summary}</p>
+        </section>
+
+        {cover && (
+          <img
+            class="cover"
+            src={cover}
+            alt={`${title} project photograph`}
+          />
+        )}
+
+        <div class="content-layout">
+          <aside>
+            <div class="eyebrow">PROJECT DETAILS</div>
+            <p>{category}</p>
+            <p>{year}</p>
+          </aside>
+
+          <article class="prose">
+            <Content />
+          </article>
+        </div>
+
+        <a href="/#work" class="bottom-link">
+          ← Back to selected work
+        </a>
+      </main>
+
+      <footer>
+        <span>© {new Date().getFullYear()} Joe Hanko</span>
+        <span>Engineering & Technology</span>
+      </footer>
+    </div>
+  </body>
+</html>
+
+<style>
+  :global(*) { box-sizing: border-box; }
+  :global(body) {
+    margin: 0;
+    background: #fafaf8;
+    color: #222;
+    font-family: Arial, Helvetica, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+  :global(a) { color: inherit; text-decoration: none; }
+  .container {
+    max-width: 1320px;
+    padding: 0 6%;
+    margin: auto;
+  }
+  header, footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 20px;
+    border-bottom: 1px solid #ddd;
+    padding: 32px 0;
+    font-size: 13px;
+  }
+  .brand { font-size: 18px; font-weight: 700; }
+  .back { color: #666; }
+  .intro { padding: 105px 0 75px; }
+  .metadata {
+    display: flex;
+    justify-content: space-between;
+    gap: 24px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-size: 11px;
+    color: #777;
+  }
+  h1 {
+    font-family: Georgia, serif;
+    font-size: clamp(48px, 7vw, 98px);
+    font-weight: 400;
+    letter-spacing: -2px;
+    line-height: 1.1;
+    max-width: 900px;
+    margin: 35px 0;
+  }
+  .summary {
+    max-width: 680px;
+    color: #666;
+    font-size: 19px;
+    line-height: 1.8;
+  }
+  .cover {
+    display: block;
+    width: 100%;
+    max-height: 650px;
+    object-fit: cover;
+    margin-bottom: 80px;
+  }
+  .content-layout {
+    display: grid;
+    grid-template-columns: 1fr 2fr;
+    gap: 75px;
+    border-top: 1px solid #ddd;
+    padding: 65px 0 100px;
+  }
+  aside { color: #777; font-size: 13px; }
+  aside p { margin: 12px 0; }
+  .eyebrow {
+    letter-spacing: 1.5px;
+    font-size: 11px;
+    margin-bottom: 26px;
+  }
+  .prose {
+    max-width: 730px;
+    font-size: 16px;
+    line-height: 1.85;
+    color: #444;
+    overflow-wrap: anywhere;
+  }
+  .prose :global(h2) {
+    font-family: Georgia, serif;
+    font-size: 36px;
+    font-weight: 400;
+    color: #222;
+    margin: 55px 0 20px;
+  }
+  .prose :global(h2:first-child) { margin-top: 0; }
+  .prose :global(h3) {
+    font-size: 19px;
+    margin: 35px 0 15px;
+  }
+  .prose :global(p) { margin: 0 0 25px; }
+  .prose :global(ul) { padding-left: 22px; }
+  .prose :global(li) { margin-bottom: 10px; }
+  .prose :global(img) {
+    width: 100%;
+    height: auto;
+    margin: 25px 0;
+  }
+  .prose :global(a) {
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+  .bottom-link {
+    display: inline-block;
+    padding: 20px 0;
+    margin-bottom: 80px;
+    border-top: 1px solid #ddd;
+    font-size: 13px;
+  }
+  footer {
+    border-top: 1px solid #ddd;
+    border-bottom: 0;
+    color: #777;
+    font-size: 12px;
+  }
+  @media (max-width: 700px) {
+    .intro { padding: 70px 0 45px; }
+    .content-layout {
+      grid-template-columns: 1fr;
+      gap: 25px;
+    }
+    h1 { letter-spacing: -1px; }
+    .summary { font-size: 16px; }
+  }
+</style>
