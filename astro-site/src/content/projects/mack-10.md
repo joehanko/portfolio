@@ -31,10 +31,6 @@ The MACK-10 is designed around controlled linear motion and load-cell force meas
 - Custom controller PCB
 - Embedded control and data acquisition
 
-## Testing
-
-Testing details have not been added to the current project notes.
-
-## Results
+## Controller revision
 
 The controller PCB footprint was reduced by 50% between revisions.

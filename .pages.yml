@@ -38,6 +38,13 @@ content:
         type: image
         options:
           extensions: [jpg, jpeg, png, webp]
+      - name: coverAlt
+        label: Hero image description
+        type: string
+        description: Describe what the image shows for readers who cannot see it.
+      - name: coverCaption
+        label: Hero image caption
+        type: string
       - name: highlights
         label: Highlight cards
         type: object
