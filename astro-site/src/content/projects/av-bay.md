@@ -1,5 +1,5 @@
 ---
-title: Dirac Delta L1 Rocketry
+title: Avionics Bay
 category: Avionics / Embedded Systems
 year: "2026"
 summary: I designed the avionics bay for a high-power rocket and built the firmware, ground receiver, and Mission Control dashboard around it.

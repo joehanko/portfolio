@@ -8,8 +8,11 @@ const projects = Object.entries(files)
     slug: path.split("/").pop().replace(".md", ""),
   }));
 
-const featured = projects.find((project) => project.slug === "delta-l1");
+const featured = projects.find((project) => project.slug === "av-bay");
 const otherProjects = projects.filter((project) => project !== featured);
+
+import { siGithub } from "simple-icons";
+
 ---
 
 <html lang="en">
@@ -23,11 +26,17 @@ const otherProjects = projects.filter((project) => project !== featured);
   <body>
     <div class="container">
       <header class="site-header">
-        <a href="/" class="brand">Joe Hanko<span>.</span></a>
+        <a href="/" class="brand">Joe Hanko</a>
         <nav aria-label="Main navigation">
           <a href="#work">Projects</a>
           <a href="#about">About</a>
-          <a href="https://github.com/joehanko">GitHub ↗</a>
+          <a href="https://github.com/joehanko" class="github-link">
+  <svg viewBox="0 0 24 24" width="16" height="16"
+       fill="currentColor" aria-hidden="true">
+    <path d={siGithub.path} />
+  </svg>
+  GitHub
+</a>
         </nav>
       </header>
 
@@ -95,8 +104,13 @@ const otherProjects = projects.filter((project) => project !== featured);
 
       <footer>
         <span>© {new Date().getFullYear()} Joe Hanko</span>
-        <a href="https://github.com/joehanko">GitHub ↗</a>
-      </footer>
+          <a href="https://github.com/joehanko" class="github-link">
+  <svg viewBox="0 0 24 24" width="16" height="16"
+       fill="currentColor" aria-hidden="true">
+    <path d={siGithub.path} />
+  </svg>
+  GitHub
+</a>      </footer>
     </div>
   </body>
 </html>
@@ -117,6 +131,11 @@ const otherProjects = projects.filter((project) => project !== featured);
     display: flex; justify-content: space-between; align-items: center;
     flex-wrap: wrap; gap: 16px; padding: 25px 0; border-bottom: 1px solid #d8dcd5;
   }
+  .github-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
   .brand { font-size: 18px; font-weight: 700; }
   .brand span { color: #456a59; }
   nav { display: flex; gap: clamp(15px, 3vw, 32px); font-size: 13px; color: #4b554e; }

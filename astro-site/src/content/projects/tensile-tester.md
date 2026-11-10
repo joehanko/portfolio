@@ -1,5 +1,5 @@
 ---
-title: MACK-10 Tensile Tester
+title: Tensile Tester
 category: Mechanical Design / Mechatronics
 year: "2026"
 summary: A compact electromechanical tensile testing machine featuring custom PCB electronics, motion control, and force measurement.
