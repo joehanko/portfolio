@@ -1,6 +1,6 @@
 media:
-  input: astro-site/public/images
-  output: /images
+  input: astro-site/public/images/projects
+  output: /images/projects
 
 content:
   - name: projects
@@ -10,31 +10,57 @@ content:
     format: yaml-frontmatter
     filename: "{primary}.md"
     view:
-      fields: [title, category, year]
       primary: title
+      fields: [title, category, year]
+      sort: [year, title]
+      default:
+        sort: year
+        order: desc
     fields:
       - name: title
-        label: Project Title
+        label: Project title
         type: string
         required: true
-
       - name: category
-        label: Engineering Discipline
+        label: Discipline
         type: string
-
+        required: true
       - name: year
         label: Year
         type: string
-
+        required: true
       - name: summary
-        label: Short Description
+        label: Short introduction
         type: text
         required: true
-
       - name: cover
-        label: Cover Photograph
+        label: Hero image
         type: image
-
+        options:
+          extensions: [jpg, jpeg, png, webp]
+      - name: highlights
+        label: Highlight cards
+        type: object
+        list:
+          max: 4
+          collapsible:
+            collapsed: true
+            summary: "{value} — {label}"
+        fields:
+          - name: value
+            label: Main detail
+            type: string
+          - name: label
+            label: Explanation
+            type: string
+      - name: gallery
+        label: Project gallery
+        type: image
+        options:
+          multiple:
+            max: 8
+          unique: true
+          extensions: [jpg, jpeg, png, webp]
       - name: body
-        label: Engineering Case Study
+        label: Case study
         type: rich-text
