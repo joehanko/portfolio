@@ -2,20 +2,10 @@
 title: Delta L1 Rocketry
 category: Avionics / Embedded Systems
 year: "2026"
-summary: A high-power rocketry project integrating onboard sensors, wireless telemetry, and compact avionics.
-cover: ""
-highlights:
-  - value: ESP32
-    label: Wireless telemetry platform
-  - value: GPS + inertial
-    label: Onboard sensing
-  - value: Barometric
-    label: Altitude measurement
-  - value: Compact bay
-    label: Avionics packaging
-gallery: []
+summary: A high-power rocketry project integrating onboard sensors, wireless
+  telemetry, and compact avionics.
+cover: /images/projects/AV Bay Profile.png
 ---
-
 ## Challenge
 
 Integrate onboard sensing and wireless telemetry into a compact, reusable avionics system for a high-power rocket.
