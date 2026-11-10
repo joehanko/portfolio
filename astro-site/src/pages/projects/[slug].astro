@@ -1,22 +1,18 @@
-
 ---
 export function getStaticPaths() {
-  const files = import.meta.glob(
-    "../../content/projects/*.md",
-    { eager: true }
-  );
+  const files = import.meta.glob("../../content/projects/*.md", { eager: true });
 
-  return Object.entries(files).map(([path, project]) => ({
-    params: {
-      slug: path.split("/").pop().replace(".md", ""),
-    },
-    props: { project },
-  }));
+  return Object.entries(files)
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([path, project], index) => ({
+      params: { slug: path.split("/").pop().replace(".md", "") },
+      props: { project, projectNumber: String(index + 1).padStart(2, "0") },
+    }));
 }
 
-const { project } = Astro.props;
+const { project, projectNumber } = Astro.props;
 const { frontmatter, Content } = project;
-const { title, category, year, summary, cover } = frontmatter;
+const { title, category, year, summary, cover, highlights = [], gallery = [] } = frontmatter;
 ---
 
 <html lang="en">
@@ -30,27 +26,40 @@ const { title, category, year, summary, cover } = frontmatter;
   <body>
     <div class="container">
       <header>
-        <a href="/" class="brand">Joe Hanko.</a>
+        <a href="/" class="brand">Joe Hanko<span>.</span></a>
         <a href="/#work" class="back">← All projects</a>
       </header>
 
       <main>
         <section class="intro">
           <div class="metadata">
-            <span>{category}</span>
+            <span>{projectNumber} / {category}</span>
             <span>{year}</span>
           </div>
-
           <h1>{title}</h1>
           <p class="summary">{summary}</p>
         </section>
 
-        {cover && (
-          <img
-            class="cover"
-            src={cover}
-            alt={`${title} project photograph`}
-          />
+        {cover ? (
+          <figure class="cover-frame">
+            <img class="cover" src={cover} alt={`${title} project`} fetchpriority="high" />
+          </figure>
+        ) : (
+          <div class="cover-placeholder" aria-label="Project image not added yet">
+            <span>PROJECT {projectNumber}</span>
+            <p>Project photography can be added in Pages CMS.</p>
+          </div>
+        )}
+
+        {highlights.length > 0 && (
+          <section class="highlights" aria-label="Project highlights">
+            {highlights.slice(0, 4).map((item) => (
+              <article class="highlight">
+                <p class="highlight-value">{item.value}</p>
+                <p class="highlight-label">{item.label}</p>
+              </article>
+            ))}
+          </section>
         )}
 
         <div class="content-layout">
@@ -59,20 +68,33 @@ const { title, category, year, summary, cover } = frontmatter;
             <p>{category}</p>
             <p>{year}</p>
           </aside>
-
           <article class="prose">
             <Content />
           </article>
         </div>
 
-        <a href="/#work" class="bottom-link">
-          ← Back to selected work
-        </a>
+        {gallery.length > 0 && (
+          <section class="gallery" aria-labelledby="gallery-title">
+            <div class="gallery-heading">
+              <p class="eyebrow">IN THE WORKSHOP</p>
+              <h2 id="gallery-title">Project gallery</h2>
+            </div>
+            <div class="gallery-grid">
+              {gallery.map((image, index) => (
+                <figure>
+                  <img src={image} alt={`${title} project detail ${index + 1}`} loading="lazy" />
+                </figure>
+              ))}
+            </div>
+          </section>
+        )}
+
+        <a href="/#work" class="bottom-link">← Back to selected work</a>
       </main>
 
       <footer>
         <span>© {new Date().getFullYear()} Joe Hanko</span>
-        <span>Engineering & Technology</span>
+        <span>Engineering &amp; Technology</span>
       </footer>
     </div>
   </body>
@@ -88,119 +110,119 @@ const { title, category, year, summary, cover } = frontmatter;
     -webkit-font-smoothing: antialiased;
   }
   :global(a) { color: inherit; text-decoration: none; }
-  .container {
-    max-width: 1320px;
-    padding: 0 6%;
-    margin: auto;
-  }
+  .container { max-width: 1320px; padding: 0 6%; margin: auto; }
   header, footer {
     display: flex;
     justify-content: space-between;
     align-items: center;
     gap: 20px;
     border-bottom: 1px solid #ddd;
-    padding: 32px 0;
+    padding: 30px 0;
     font-size: 13px;
   }
   .brand { font-size: 18px; font-weight: 700; }
+  .brand span { color: #999; }
   .back { color: #666; }
-  .intro { padding: 105px 0 75px; }
+  .back:hover, .bottom-link:hover { color: #111; }
+  .intro { padding: 104px 0 58px; }
   .metadata {
     display: flex;
     justify-content: space-between;
     gap: 24px;
     text-transform: uppercase;
-    letter-spacing: 1px;
+    letter-spacing: 1.2px;
     font-size: 11px;
     color: #777;
   }
+  h1, h2 { font-family: Georgia, "Times New Roman", serif; font-weight: 400; }
   h1 {
-    font-family: Georgia, serif;
-    font-size: clamp(48px, 7vw, 98px);
-    font-weight: 400;
-    letter-spacing: -2px;
-    line-height: 1.1;
-    max-width: 900px;
-    margin: 35px 0;
+    font-size: clamp(48px, 7vw, 96px);
+    letter-spacing: -2.5px;
+    line-height: 1.08;
+    max-width: 1000px;
+    margin: 34px 0 24px;
   }
-  .summary {
-    max-width: 680px;
-    color: #666;
-    font-size: 19px;
-    line-height: 1.8;
-  }
+  .summary { max-width: 700px; color: #666; font-size: 18px; line-height: 1.8; margin: 0; }
+  .cover-frame, .cover-placeholder { margin: 0; }
+  .cover-frame { background: #e9e9e5; }
   .cover {
     display: block;
     width: 100%;
-    max-height: 650px;
+    aspect-ratio: 16 / 9;
+    max-height: 680px;
     object-fit: cover;
-    margin-bottom: 80px;
   }
+  .cover-placeholder {
+    min-height: clamp(240px, 40vw, 500px);
+    background: #eeeee9;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    align-items: flex-start;
+    padding: clamp(24px, 5vw, 64px);
+    color: #888;
+  }
+  .cover-placeholder span, .eyebrow { letter-spacing: 1.5px; font-size: 11px; }
+  .cover-placeholder p { margin: 12px 0 0; font-size: 13px; }
+  .highlights {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    margin: 0 0 84px;
+    border-bottom: 1px solid #ddd;
+  }
+  .highlight { padding: 28px 22px 30px 0; border-top: 1px solid #ddd; }
+  .highlight + .highlight { padding-left: 22px; border-left: 1px solid #ddd; }
+  .highlight-value { font-family: Georgia, serif; font-size: clamp(22px, 2.7vw, 34px); line-height: 1.2; margin: 0 0 8px; }
+  .highlight-label { font-size: 12px; line-height: 1.5; color: #777; margin: 0; }
   .content-layout {
     display: grid;
-    grid-template-columns: 1fr 2fr;
-    gap: 75px;
+    grid-template-columns: minmax(140px, 1fr) minmax(0, 2.3fr);
+    gap: 8%;
     border-top: 1px solid #ddd;
-    padding: 65px 0 100px;
+    padding: 58px 0 92px;
   }
   aside { color: #777; font-size: 13px; }
   aside p { margin: 12px 0; }
-  .eyebrow {
-    letter-spacing: 1.5px;
-    font-size: 11px;
-    margin-bottom: 26px;
-  }
-  .prose {
-    max-width: 730px;
-    font-size: 16px;
-    line-height: 1.85;
-    color: #444;
-    overflow-wrap: anywhere;
-  }
+  .eyebrow { margin: 0 0 20px; color: #777; }
+  .prose { max-width: 760px; font-size: 16px; line-height: 1.85; color: #444; overflow-wrap: anywhere; }
   .prose :global(h2) {
-    font-family: Georgia, serif;
-    font-size: 36px;
+    font-family: Georgia, "Times New Roman", serif;
+    font-size: clamp(28px, 3vw, 36px);
     font-weight: 400;
+    line-height: 1.2;
     color: #222;
-    margin: 55px 0 20px;
+    margin: 58px 0 17px;
   }
   .prose :global(h2:first-child) { margin-top: 0; }
-  .prose :global(h3) {
-    font-size: 19px;
-    margin: 35px 0 15px;
-  }
-  .prose :global(p) { margin: 0 0 25px; }
+  .prose :global(h3) { font-size: 18px; margin: 35px 0 14px; }
+  .prose :global(p) { margin: 0 0 22px; }
   .prose :global(ul) { padding-left: 22px; }
-  .prose :global(li) { margin-bottom: 10px; }
-  .prose :global(img) {
-    width: 100%;
-    height: auto;
-    margin: 25px 0;
-  }
-  .prose :global(a) {
-    text-decoration: underline;
-    text-underline-offset: 3px;
-  }
-  .bottom-link {
-    display: inline-block;
-    padding: 20px 0;
-    margin-bottom: 80px;
-    border-top: 1px solid #ddd;
-    font-size: 13px;
-  }
-  footer {
-    border-top: 1px solid #ddd;
-    border-bottom: 0;
-    color: #777;
-    font-size: 12px;
-  }
-  @media (max-width: 700px) {
-    .intro { padding: 70px 0 45px; }
-    .content-layout {
-      grid-template-columns: 1fr;
-      gap: 25px;
-    }
-    h1 { letter-spacing: -1px; }
+  .prose :global(li) { margin-bottom: 9px; padding-left: 4px; }
+  .prose :global(img) { display: block; width: 100%; height: auto; margin: 25px 0; }
+  .prose :global(a) { text-decoration: underline; text-underline-offset: 3px; }
+  .gallery { border-top: 1px solid #ddd; padding: 55px 0 75px; }
+  .gallery-heading { display: flex; justify-content: space-between; align-items: baseline; gap: 24px; margin-bottom: 28px; }
+  .gallery-heading .eyebrow { margin: 0; }
+  .gallery-heading h2 { font-size: 32px; margin: 0; }
+  .gallery-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; }
+  .gallery-grid figure { margin: 0; background: #e9e9e5; }
+  .gallery-grid img { display: block; width: 100%; aspect-ratio: 4 / 3; object-fit: cover; }
+  .bottom-link { display: inline-block; border-top: 1px solid #ddd; padding: 20px 0; margin-bottom: 70px; font-size: 13px; color: #666; }
+  footer { border-top: 1px solid #ddd; border-bottom: 0; color: #777; font-size: 12px; }
+  @media (max-width: 760px) {
+    .intro { padding: 74px 0 40px; }
+    h1 { letter-spacing: -1.5px; }
     .summary { font-size: 16px; }
+    .highlights { grid-template-columns: repeat(2, minmax(0, 1fr)); margin-bottom: 60px; }
+    .highlight:nth-child(3) { padding-left: 0; border-left: 0; }
+    .content-layout { grid-template-columns: 1fr; gap: 28px; padding: 42px 0 64px; }
+    .gallery { padding: 42px 0 55px; }
+  }
+  @media (max-width: 520px) {
+    .container { padding: 0 22px; }
+    header, footer { padding: 22px 0; }
+    .cover-placeholder { min-height: 230px; }
+    .gallery-heading { align-items: flex-start; flex-direction: column; gap: 12px; }
+    .gallery-grid { grid-template-columns: 1fr; }
   }
 </style>

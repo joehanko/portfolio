@@ -1,0 +1,68 @@
+media:
+  input: public/images/projects
+  output: /images/projects
+
+content:
+  - name: projects
+    label: Engineering Projects
+    type: collection
+    path: src/content/projects
+    format: yaml-frontmatter
+    filename: "{primary}.md"
+    primary: title
+    view:
+      fields: [title, category, year]
+      sort: [year, title]
+      default:
+        sort: year
+        order: desc
+    fields:
+      - name: title
+        label: Project title
+        type: string
+        required: true
+      - name: category
+        label: Discipline
+        type: string
+        required: true
+      - name: year
+        label: Year
+        type: string
+        required: true
+      - name: summary
+        label: Short introduction
+        type: text
+        required: true
+      - name: cover
+        label: Hero image
+        type: image
+        options:
+          path: public/images/projects
+          extensions: [jpg, jpeg, png, webp]
+      - name: highlights
+        label: Highlight cards
+        type: object
+        list:
+          max: 4
+          collapsible:
+            collapsed: true
+            summary: "{value} — {label}"
+        fields:
+          - name: value
+            label: Main detail
+            type: string
+          - name: label
+            label: Explanation
+            type: string
+      - name: gallery
+        label: Project gallery
+        type: image
+        options:
+          multiple:
+            max: 8
+          unique: true
+          path: public/images/projects
+          extensions: [jpg, jpeg, png, webp]
+      - name: body
+        label: Case study
+        type: rich-text
