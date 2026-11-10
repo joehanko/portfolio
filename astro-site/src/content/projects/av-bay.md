@@ -2,10 +2,13 @@
 title: Avionics Bay
 category: Avionics / Embedded Systems
 year: "2026"
-summary: I designed the avionics bay for a high-power rocket and built the firmware, ground receiver, and Mission Control dashboard around it.
+summary: I designed the avionics bay for a high-power rocket and built the
+  firmware, ground receiver, and Mission Control dashboard around it.
 cover: /images/projects/AV Bay Profile.png
-coverAlt: CAD rendering of the cylindrical Dirac Delta avionics bay with the electronics visible through the side.
-coverCaption: CAD view of the Dirac Delta avionics bay and its internal electronics packaging.
+coverAlt: CAD rendering of the cylindrical Dirac Delta avionics bay with the
+  electronics visible through the side.
+coverCaption: CAD view of the Dirac Delta avionics bay and its internal
+  electronics packaging.
 highlights:
   - value: XIAO ESP32-S3
     label: Onboard sensing and recording
@@ -15,8 +18,9 @@ highlights:
     label: Segmented video and onboard telemetry logs
   - value: Mission Control
     label: Ground dashboard, rehearsals, and data review
+gallery:
+  - /images/projects/Mission Control.png
 ---
-
 ## Project overview
 
 My work on Dirac Delta covered the mechanical packaging of the avionics bay, the onboard and ground firmware, and Mission Control, the browser app I built to operate and review the system. I wanted to see what the rocket was reporting from the ground and keep a separate record on the rocket for later review. That gave me two data paths to design around.
