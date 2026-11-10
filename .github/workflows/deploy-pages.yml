@@ -1,11 +1,11 @@
-name: Deploy portfolio to GitHub Pages
+name: Deploy projects to GitHub Pages
 
 on:
   push:
-    branches: [portfolio-redesign]
+    branches: [projects]
 
 concurrency:
-  group: portfolio-github-pages
+  group: projects-github-pages
   cancel-in-progress: false
 
 jobs:
@@ -39,6 +39,6 @@ jobs:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
-      - name: Publish the portfolio
+      - name: Publish the projects site
         id: deployment
         uses: actions/deploy-pages@v4
