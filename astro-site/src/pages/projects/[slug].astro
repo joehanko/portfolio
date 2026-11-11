@@ -4,37 +4,67 @@ import { ELEMENT_NODE, TEXT_NODE, parse, renderSync } from "ultrahtml";
 import "../../styles/editorial.css";
 
 export function getStaticPaths() {
-  const files = import.meta.glob("../../content/projects/*.md", { eager: true });
+  const files = import.meta.glob("../../content/projects/*.md", {
+    eager: true,
+  });
   const entries = Object.entries(files)
     .sort(([a], [b]) => a.localeCompare(b))
-    .map(([path, project]) => ({ slug: path.split("/").pop().replace(".md", ""), project }));
+    .map(([path, project]) => ({
+      slug: path.split("/").pop().replace(".md", ""),
+      project,
+    }));
 
   return entries.map(({ slug, project }) => ({
     params: { slug },
     props: {
       project,
-      related: entries.filter((entry) => entry.slug !== slug).slice(0, 3).map((entry) => ({
-        slug: entry.slug,
-        ...entry.project.frontmatter,
-      })),
+      related: entries
+        .filter((entry) => entry.slug !== slug)
+        .slice(0, 3)
+        .map((entry) => ({
+          slug: entry.slug,
+          ...entry.project.frontmatter,
+        })),
     },
   }));
 }
 
 const { project, related } = Astro.props;
 const {
-  title, category, year, summary, cover, coverAlt, coverCaption,
-  client, duration, projectUrl, featureImage, closingImage, quote, quoteAttribution,
+  title,
+  category,
+  year,
+  summary,
+  cover,
+  coverAlt,
+  coverCaption,
+  heroModel,
+  client,
+  duration,
+  projectUrl,
+  featureImage,
+  closingImage,
+  quote,
+  quoteAttribution,
 } = project.frontmatter;
 const highlights = Array.isArray(project.frontmatter.highlights)
-  ? project.frontmatter.highlights.filter((item) => item?.value && item?.label).slice(0, 4)
+  ? project.frontmatter.highlights
+      .filter((item) => item?.value && item?.label)
+      .slice(0, 4)
   : [];
-const gallery = Array.isArray(project.frontmatter.gallery) ? project.frontmatter.gallery.filter(Boolean) : [];
+const gallery = Array.isArray(project.frontmatter.gallery)
+  ? project.frontmatter.gallery.filter(Boolean)
+  : [];
 const images = [
-  ...(cover ? [{ src: cover, alt: coverAlt || title, caption: coverCaption }] : []),
-  ...gallery.filter((src) => src !== cover).map((src, index) => ({
-    src, alt: `${title} project image ${index + 1}`,
-  })),
+  ...(cover
+    ? [{ src: cover, alt: coverAlt || title, caption: coverCaption }]
+    : []),
+  ...gallery
+    .filter((src) => src !== cover)
+    .map((src, index) => ({
+      src,
+      alt: `${title} project image ${index + 1}`,
+    })),
 ];
 
 const [heroImage] = images;
@@ -65,13 +95,19 @@ const [overview, ...sections] = blocks;
   <body>
     <div class="container">
       <header class="site-header">
-        <a href="/" class="brand">© Joe Hanko</a>
+        <a href="/" class="brand">Joe Hanko</a>
         <nav class="site-nav" aria-label="Main navigation">
           <a href="/projects/">Projects</a>
           <a href="/#about">About</a>
           <a href="https://github.com/joehanko" class="github-link">
-            <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" aria-hidden="true">
-              <path d={siGithub.path} />
+            <svg
+              viewBox="0 0 24 24"
+              width="16"
+              height="16"
+              fill="currentColor"
+              aria-hidden="true"
+            >
+              <path d={siGithub.path}></path>
             </svg>
             GitHub
           </a>
@@ -79,117 +115,239 @@ const [overview, ...sections] = blocks;
       </header>
 
       <main>
-        <section class:list={["project-lead", { "has-media": heroImage }]} aria-labelledby="project-title">
+        <section
+          class:list={["project-lead", { "has-media": heroImage }]}
+          aria-labelledby="project-title"
+        >
           <div class="intro">
             <p class="eyebrow metadata">{category} · {year}</p>
             <h1 id="project-title">{title}</h1>
             <p class="summary">{summary}</p>
-            {projectUrl && <a class="project-action" href={projectUrl}>Live site</a>}
-            <section id="project-details" class="details" aria-label="Project details">
-              {overview && (
-                <div class="overview prose">
-                  <p class="eyebrow">Overview</p>
-                  <Fragment set:html={overview} />
-                </div>
-              )}
+            {
+              projectUrl && (
+                <a class="project-action" href={projectUrl}>
+                  Live site
+                </a>
+              )
+            }
+            <section
+              id="project-details"
+              class="details"
+              aria-label="Project details"
+            >
+              {
+                overview && (
+                  <div class="overview prose">
+                    <p class="eyebrow">Overview</p>
+                    <Fragment set:html={overview} />
+                  </div>
+                )
+              }
               <div>
                 <dl class="facts">
-                  {client && <div><dt class="eyebrow">Client</dt><dd>{client}</dd></div>}
+                  {
+                    client && (
+                      <div>
+                        <>
+                          <dt class="eyebrow">Client</dt>
+                          <dd>{client}</dd>
+                        </>
+                      </div>
+                    )
+                  }
                   <div><dt class="eyebrow">Scope</dt><dd>{category}</dd></div>
                   <div><dt class="eyebrow">Year</dt><dd>{year}</dd></div>
-                  {duration && <div><dt class="eyebrow">Duration</dt><dd>{duration}</dd></div>}
+                  {
+                    duration && (
+                      <div>
+                        <>
+                          <dt class="eyebrow">Duration</dt>
+                          <dd>{duration}</dd>
+                        </>
+                      </div>
+                    )
+                  }
                 </dl>
-                {highlights.length > 0 && (
-                  <dl class="highlights" aria-label="Project highlights">
-                    {highlights.map(({ value, label }) => (
-                      <div><dt>{value}</dt><dd>{label}</dd></div>
-                    ))}
-                  </dl>
-                )}
+                {
+                  highlights.length > 0 && (
+                    <dl class="highlights" aria-label="Project highlights">
+                      {highlights.map(({ value, label }) => (
+                        <div>
+                          <dt>{value}</dt>
+                          <dd>{label}</dd>
+                        </div>
+                      ))}
+                    </dl>
+                  )
+                }
               </div>
-
             </section>
           </div>
 
-          {heroImage && (
-            <section class="project-carousel" aria-label="Project images">
-              <figure>
-                <a class="carousel-image" href={heroImage.src} target="_blank" rel="noopener"
-                   aria-label="Enlarge selected image">
-                  <img src={heroImage.src} alt={heroImage.alt} fetchpriority="high" />
-                </a>
-                <figcaption hidden={!heroImage.caption}>{heroImage.caption}</figcaption>
-              </figure>
-              {images.length > 1 && (
-                <ul class="carousel-thumbnails" aria-label="Choose a project image">
-                  {images.map((image, index) => (
-                    <li>
-                      <a class="carousel-thumbnail" href={image.src} data-alt={image.alt} data-caption={image.caption || ""}
-                         aria-label={`Show image ${index + 1} of ${images.length}`}
-                         aria-current={index === 0 ? "true" : undefined}>
-                        <img src={image.src} alt="" loading="lazy" />
-                      </a>
-                    </li>
-                  ))}
-                </ul>
-              )}
-              <dialog class="image-lightbox" aria-label="Enlarged project image">
-                <form method="dialog">
-                  <button type="submit" class="lightbox-close" aria-label="Close image" autofocus>×</button>
-                </form>
-                <img class="lightbox-image" alt="" />
-              </dialog>
-            </section>
-          )}
+          {
+            heroImage && (
+              <section class="project-carousel" aria-label="Project images">
+                <figure>
+                  <a
+                    class="carousel-image"
+                    href={heroImage.src}
+                    target="_blank"
+                    rel="noopener"
+                    aria-label="Enlarge selected image"
+                  >
+                    <img
+                      src={heroImage.src}
+                      alt={heroImage.alt}
+                      fetchpriority="high"
+                    />
+                  </a>
+                  {heroModel && (
+                    <model-viewer
+                      class="carousel-model"
+                      data-model-src={heroModel}
+                      poster={heroImage.src}
+                      alt={heroImage.alt}
+                      camera-controls
+                      touch-action="pan-y"
+                      hidden
+                    ></model-viewer>
+                  )}
+                  <figcaption hidden={!heroImage.caption}>
+                    {heroImage.caption}
+                  </figcaption>
+                </figure>
+                {heroModel && (
+                  <div class="model-controls">
+                    <button type="button" class="model-toggle" aria-pressed="false" hidden>
+                      View in 3D
+                    </button>
+                    <p class="model-status" role="status"></p>
+                  </div>
+                )}
+                {images.length > 1 && (
+                  <ul
+                    class="carousel-thumbnails"
+                    aria-label="Choose a project image"
+                  >
+                    {images.map((image, index) => (
+                      <li>
+                        <a
+                          class="carousel-thumbnail"
+                          href={image.src}
+                          data-alt={image.alt}
+                          data-caption={image.caption || ""}
+                          aria-label={`Show image ${index + 1} of ${images.length}`}
+                          aria-current={index === 0 ? "true" : undefined}
+                        >
+                          <img src={image.src} alt="" loading="lazy" />
+                        </a>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+                <dialog
+                  class="image-lightbox"
+                  aria-label="Enlarged project image"
+                >
+                  <form method="dialog">
+                    <button
+                      type="submit"
+                      class="lightbox-close"
+                      aria-label="Close image"
+                      autofocus
+                    >
+                      ×
+                    </button>
+                  </form>
+                  <img class="lightbox-image" alt="" />
+                </dialog>
+              </section>
+            )
+          }
         </section>
 
-        {featureImage && (
-          <figure class="wide-image">
-            <img src={featureImage} alt={`${title} project detail`} loading="lazy" />
-          </figure>
-        )}
+        {
+          featureImage && (
+            <figure class="wide-image">
+              <img
+                src={featureImage}
+                alt={`${title} project detail`}
+                loading="lazy"
+              />
+            </figure>
+          )
+        }
 
-        {sections.length > 0 && (
-          <div class="text-blocks">
-            {sections.map((section) => (
-              <section class="text-block prose"><Fragment set:html={section} /></section>
-            ))}
-          </div>
-        )}
-
-        {quote && (
-          <figure class="testimonial">
-            <p class="eyebrow">Testimonial</p>
-            <div>
-              <blockquote>{quote}</blockquote>
-              {quoteAttribution && <figcaption>{quoteAttribution}</figcaption>}
+        {
+          sections.length > 0 && (
+            <div class="text-blocks">
+              {sections.map((section) => (
+                <section class="text-block prose">
+                  <Fragment set:html={section} />
+                </section>
+              ))}
             </div>
-          </figure>
-        )}
+          )
+        }
 
-        {closingImage && (
-          <figure class="wide-image">
-            <img src={closingImage} alt={`${title} project closing image`} loading="lazy" />
-          </figure>
-        )}
+        {
+          quote && (
+            <figure class="testimonial">
+              <p class="eyebrow">Testimonial</p>
+              <div>
+                <blockquote>{quote}</blockquote>
+                {quoteAttribution && (
+                  <figcaption>{quoteAttribution}</figcaption>
+                )}
+              </div>
+            </figure>
+          )
+        }
 
-        {related.length > 0 && (
-          <section class="related" aria-labelledby="related-title">
-            <h2 class="eyebrow" id="related-title">More projects</h2>
-            <div class="related-grid">
-              {related.map((item) => {
-                const image = item.cover || (Array.isArray(item.gallery) && item.gallery.find(Boolean));
-                return (
-                  <a class="related-card" href={`/projects/${item.slug}/`}>
-                    {image && <img src={image} alt={item.coverAlt || item.title} loading="lazy" />}
-                    <h3>{item.title}<span aria-hidden="true">↗</span></h3>
-                    <p class="eyebrow">{item.category}</p>
-                  </a>
-                );
-              })}
-            </div>
-          </section>
-        )}
+        {
+          closingImage && (
+            <figure class="wide-image">
+              <img
+                src={closingImage}
+                alt={`${title} project closing image`}
+                loading="lazy"
+              />
+            </figure>
+          )
+        }
+
+        {
+          related.length > 0 && (
+            <section class="related" aria-labelledby="related-title">
+              <h2 class="eyebrow" id="related-title">
+                More projects
+              </h2>
+              <div class="related-grid">
+                {related.map((item) => {
+                  const image =
+                    item.cover ||
+                    (Array.isArray(item.gallery) && item.gallery.find(Boolean));
+                  return (
+                    <a class="related-card" href={`/projects/${item.slug}/`}>
+                      {image && (
+                        <img
+                          src={image}
+                          alt={item.coverAlt || item.title}
+                          loading="lazy"
+                        />
+                      )}
+                      <h3>
+                        {item.title}
+                        <span aria-hidden="true">↗</span>
+                      </h3>
+                      <p class="eyebrow">{item.category}</p>
+                    </a>
+                  );
+                })}
+              </div>
+            </section>
+          )
+        }
       </main>
 
       <footer class="site-footer">
@@ -202,16 +360,30 @@ const [overview, ...sections] = blocks;
 
 <script>
   const carousel = document.querySelector(".project-carousel");
-  const fullImageLink = carousel?.querySelector<HTMLAnchorElement>(".carousel-image");
+  const fullImageLink =
+    carousel?.querySelector<HTMLAnchorElement>(".carousel-image");
   const selectedImage = fullImageLink?.querySelector("img");
   const caption = carousel?.querySelector("figcaption");
   const lightbox = carousel?.querySelector("dialog");
   const enlargedImage = lightbox?.querySelector("img");
   const closeButton = lightbox?.querySelector("button");
 
-  if (fullImageLink && selectedImage && lightbox && enlargedImage && typeof lightbox.showModal === "function") {
+  if (
+    fullImageLink &&
+    selectedImage &&
+    lightbox &&
+    enlargedImage &&
+    typeof lightbox.showModal === "function"
+  ) {
     fullImageLink.addEventListener("click", (event) => {
-      if (event.defaultPrevented || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+      if (
+        event.defaultPrevented ||
+        event.metaKey ||
+        event.ctrlKey ||
+        event.shiftKey ||
+        event.altKey
+      )
+        return;
       event.preventDefault();
       enlargedImage.src = fullImageLink.href;
       enlargedImage.alt = selectedImage.alt;
@@ -227,14 +399,84 @@ const [overview, ...sections] = blocks;
       fullImageLink.focus({ preventScroll: true });
     });
   }
-  let selectedThumbnail = carousel?.querySelector(".carousel-thumbnail[aria-current]");
+  let selectedThumbnail = carousel?.querySelector(
+    ".carousel-thumbnail[aria-current]",
+  );
+
+  const model = carousel?.querySelector<HTMLElement>("model-viewer");
+  const modelToggle = carousel?.querySelector<HTMLButtonElement>(".model-toggle");
+  const modelStatus = carousel?.querySelector(".model-status");
+
+  let modelRequest = 0;
+
+  function showPhoto() {
+    modelRequest += 1;
+    if (!model || !modelToggle || !fullImageLink) return;
+    model.hidden = true;
+    fullImageLink.hidden = false;
+    modelToggle.textContent = "View in 3D";
+    modelToggle.setAttribute("aria-pressed", "false");
+    selectedThumbnail?.setAttribute("aria-current", "true");
+    if (modelStatus) modelStatus.textContent = "";
+  }
+
+  if (model && modelToggle && modelStatus && fullImageLink) {
+    modelToggle.hidden = false;
+    modelToggle.addEventListener("click", async () => {
+      if (!model.hidden) {
+        showPhoto();
+        return;
+      }
+
+      const request = ++modelRequest;
+      modelToggle.disabled = true;
+      modelStatus.textContent = "Loading 3D viewer…";
+      try {
+        const viewerModule = "https://cdn.jsdelivr.net/npm/@google/model-viewer@4.1.0/dist/model-viewer.min.js";
+        if (!customElements.get("model-viewer")) {
+          await import(/* @vite-ignore */ viewerModule);
+        }
+        if (request !== modelRequest) return;
+        const source = model.dataset.modelSrc;
+        if (source && !model.hasAttribute("src")) model.setAttribute("src", source);
+        fullImageLink.hidden = true;
+        model.hidden = false;
+        selectedThumbnail?.removeAttribute("aria-current");
+        modelToggle.textContent = "Back to photos";
+        modelToggle.setAttribute("aria-pressed", "true");
+        modelStatus.textContent = "Drag to rotate. Scroll or pinch to zoom.";
+      } catch {
+        if (request === modelRequest) {
+          modelStatus.textContent = "The 3D viewer couldn’t load. You can still browse the photos.";
+        }
+      } finally {
+        modelToggle.disabled = false;
+      }
+    });
+    model.addEventListener("error", () => {
+      if (model.hidden) return;
+      showPhoto();
+      model.removeAttribute("src");
+      modelStatus.textContent = "The 3D model couldn’t load. You can still browse the photos.";
+    });
+  }
 
   if (carousel && fullImageLink && selectedImage && caption) {
-    for (const thumbnail of carousel.querySelectorAll<HTMLAnchorElement>(".carousel-thumbnail")) {
+    for (const thumbnail of carousel.querySelectorAll<HTMLAnchorElement>(
+      ".carousel-thumbnail",
+    )) {
       thumbnail.addEventListener("click", (event) => {
-        if (event.defaultPrevented || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+        if (
+          event.defaultPrevented ||
+          event.metaKey ||
+          event.ctrlKey ||
+          event.shiftKey ||
+          event.altKey
+        )
+          return;
         event.preventDefault();
 
+        showPhoto();
         fullImageLink.href = thumbnail.href;
         selectedImage.src = thumbnail.href;
         selectedImage.alt = thumbnail.dataset.alt || "";
@@ -249,33 +491,51 @@ const [overview, ...sections] = blocks;
 </script>
 
 <style>
-  .site-header { position: sticky; top: 0; z-index: 1; }
+  .site-header {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+  }
   main {
     --section-columns: repeat(3, minmax(0, 1fr));
     --project-text-width: 43ch;
   }
-  .text-blocks, .testimonial, .related-grid {
+  .text-blocks,
+  .testimonial,
+  .related-grid {
     display: grid;
     grid-template-columns: var(--section-columns);
     column-gap: var(--grid-gap);
   }
-  .project-lead { padding-top: clamp(34px, 4vw, 56px); }
+  .project-lead {
+    padding-top: clamp(34px, 4vw, 56px);
+  }
   .project-lead.has-media {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
     column-gap: var(--grid-gap);
     align-items: start;
   }
-  .project-lead:not(.has-media) .intro { max-width: 65ch; }
-  .metadata { color: #2e2e2e; }
+  .project-lead:not(.has-media) .intro {
+    max-width: 65ch;
+  }
+  .metadata {
+    color: #2e2e2e;
+  }
   h1 {
     margin: 8px 0 24px;
     font-size: clamp(36px, 4.6vw, 58px);
     font-weight: 900;
-    line-height: .95;
-    letter-spacing: -.028em;
+    line-height: 0.95;
+    letter-spacing: -0.028em;
   }
-  .summary { max-width: var(--project-text-width); margin: 0; color: var(--muted); font-size: 16px; line-height: 1.55; }
+  .summary {
+    max-width: var(--project-text-width);
+    margin: 0;
+    color: var(--muted);
+    font-size: 16px;
+    line-height: 1.55;
+  }
   .project-action {
     display: inline-flex;
     align-items: center;
@@ -288,11 +548,20 @@ const [overview, ...sections] = blocks;
     font-weight: 700;
     text-transform: uppercase;
   }
-  .project-action:hover { color: var(--paper); background: var(--ink); }
+  .project-action:hover {
+    color: var(--paper);
+    background: var(--ink);
+  }
 
-  figure { margin: 0; }
-  .carousel-image { display: block; cursor: zoom-in; }
-  .carousel-image img, .wide-image img {
+  figure {
+    margin: 0;
+  }
+  .carousel-image {
+    display: block;
+    cursor: zoom-in;
+  }
+  .carousel-image img,
+  .wide-image img {
     display: block;
     width: 100%;
     max-height: min(65svh, 620px);
@@ -304,20 +573,76 @@ const [overview, ...sections] = blocks;
     max-height: min(54svh, 480px);
     object-fit: cover;
   }
-  .project-carousel figcaption { margin-top: 7px; color: var(--muted); font-size: 13px; line-height: 1.5; }
+  .carousel-model {
+    display: block;
+    width: 100%;
+    aspect-ratio: 16 / 10;
+    max-height: min(54svh, 480px);
+    background: var(--panel);
+  }
+  .carousel-image[hidden], .carousel-model[hidden], .model-toggle[hidden] {
+    display: none;
+  }
+  .model-controls {
+    display: flex;
+    align-items: baseline;
+    flex-wrap: wrap;
+    gap: 8px 12px;
+    margin-top: 12px;
+  }
+  .model-toggle {
+    border: 1px solid var(--rule);
+    padding: 8px 12px;
+    background: var(--paper);
+    color: var(--ink);
+    font: 700 13px var(--body);
+    cursor: pointer;
+  }
+  .model-toggle:hover { border-color: var(--accent-strong); }
+  .model-toggle:disabled { cursor: wait; }
+  .model-status { margin: 0; color: var(--muted); font-size: 13px; }
+  .project-carousel figcaption {
+    margin-top: 7px;
+    color: var(--muted);
+    font-size: 13px;
+    line-height: 1.5;
+  }
   .carousel-thumbnails {
-    display: flex; gap: 8px; margin: 0; padding: 11px 4px 5px;
-    overflow-x: auto; overscroll-behavior-x: contain; list-style: none;
+    display: flex;
+    gap: 8px;
+    margin: 0;
+    padding: 11px 4px 5px;
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    list-style: none;
   }
-  .carousel-thumbnails li { flex: 0 0 clamp(65px, 8vw, 98px); }
+  .carousel-thumbnails li {
+    flex: 0 0 clamp(65px, 8vw, 98px);
+  }
   .carousel-thumbnail {
-    position: relative; display: block; aspect-ratio: 4 / 3;
-    overflow: hidden; border: 2px solid transparent; background: var(--panel);
+    position: relative;
+    display: block;
+    aspect-ratio: 4 / 3;
+    overflow: hidden;
+    border: 2px solid transparent;
+    background: var(--panel);
   }
-  .carousel-thumbnail:hover { border-color: var(--muted); }
-  .carousel-thumbnail[aria-current="true"] { border-color: var(--accent-strong); }
-  .carousel-thumbnail:focus-visible { outline-offset: 1px; }
-  .carousel-thumbnail img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+  .carousel-thumbnail:hover {
+    border-color: var(--muted);
+  }
+  .carousel-thumbnail[aria-current="true"] {
+    border-color: var(--accent-strong);
+  }
+  .carousel-thumbnail:focus-visible {
+    outline-offset: 1px;
+  }
+  .carousel-thumbnail img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
 
   .image-lightbox {
     max-width: calc(100% - 24px);
@@ -330,8 +655,15 @@ const [overview, ...sections] = blocks;
     overflow: hidden;
     cursor: zoom-out;
   }
-  .image-lightbox::backdrop { background: rgb(12 12 12 / 85%); }
-  .lightbox-image { display: block; max-width: min(94vw, 1400px); max-height: 88svh; object-fit: contain; }
+  .image-lightbox::backdrop {
+    background: rgb(12 12 12 / 85%);
+  }
+  .lightbox-image {
+    display: block;
+    max-width: min(94vw, 1400px);
+    max-height: 88svh;
+    object-fit: contain;
+  }
   .lightbox-close {
     position: absolute;
     top: 10px;
@@ -348,8 +680,13 @@ const [overview, ...sections] = blocks;
     font: 26px/1 var(--body);
     cursor: pointer;
   }
-  .lightbox-close:hover { background: #444; }
-  .lightbox-close:focus-visible { outline: 2px solid #fff; outline-offset: 3px; }
+  .lightbox-close:hover {
+    background: #444;
+  }
+  .lightbox-close:focus-visible {
+    outline: 2px solid #fff;
+    outline-offset: 3px;
+  }
 
   .details {
     display: grid;
@@ -359,16 +696,46 @@ const [overview, ...sections] = blocks;
     border-top: 1px solid var(--rule);
     scroll-margin-top: 90px;
   }
-  .facts, .highlights { display: grid; gap: 14px; margin: 0; }
-  .facts { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .facts dd, .highlights dd { margin: 3px 0 0; }
-  .facts dd { font-size: 16px; font-weight: 700; }
-  .highlights { grid-template-columns: repeat(2, minmax(0, 1fr)); margin-top: 28px; }
-  .highlights dt { font-weight: 700; }
-  .highlights dd { color: var(--muted); font-size: 14px; line-height: 1.5; overflow-wrap: anywhere; }
-  .overview .eyebrow { margin-bottom: 8px; }
+  .facts,
+  .highlights {
+    display: grid;
+    gap: 14px;
+    margin: 0;
+  }
+  .facts {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .facts dd,
+  .highlights dd {
+    margin: 3px 0 0;
+  }
+  .facts dd {
+    font-size: 16px;
+    font-weight: 700;
+  }
+  .highlights {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    margin-top: 28px;
+  }
+  .highlights dt {
+    font-weight: 700;
+  }
+  .highlights dd {
+    color: var(--muted);
+    font-size: 14px;
+    line-height: 1.5;
+    overflow-wrap: anywhere;
+  }
+  .overview .eyebrow {
+    margin-bottom: 8px;
+  }
 
-  .wide-image, .text-blocks, .testimonial, .related { margin-top: var(--section-space); }
+  .wide-image,
+  .text-blocks,
+  .testimonial,
+  .related {
+    margin-top: var(--section-space);
+  }
   .text-blocks {
     margin-top: clamp(30px, 4vw, 52px);
     padding-top: 24px;
@@ -376,8 +743,17 @@ const [overview, ...sections] = blocks;
     row-gap: clamp(30px, 4vw, 52px);
   }
 
-  .prose { color: var(--muted); font-size: 16px; line-height: 1.65; overflow-wrap: anywhere; }
-  .text-block.prose { min-width: 0; font-size: 15px; line-height: 1.5; }
+  .prose {
+    color: var(--muted);
+    font-size: 16px;
+    line-height: 1.65;
+    overflow-wrap: anywhere;
+  }
+  .text-block.prose {
+    min-width: 0;
+    font-size: 15px;
+    line-height: 1.5;
+  }
   .text-block > :global(:is(h2, h3, p, ul, ol, blockquote)),
   .overview > :global(:is(p, ul, ol, blockquote)) {
     max-width: var(--project-text-width);
@@ -388,16 +764,20 @@ const [overview, ...sections] = blocks;
     font-size: 22px;
     font-weight: 700;
     line-height: 1.18;
-    letter-spacing: -.02em;
+    letter-spacing: -0.02em;
   }
-  .prose :global(h3) { margin: 18px 0 8px; color: var(--ink); font-size: 18px; }
+  .prose :global(h3) {
+    margin: 18px 0 8px;
+    color: var(--ink);
+    font-size: 18px;
+  }
   .text-block :global(h2:has(+ h3)) {
     margin: 0 0 8px;
     color: #686868;
     font-size: 12px;
     font-weight: 600;
     line-height: 1.4;
-    letter-spacing: .08em;
+    letter-spacing: 0.08em;
     text-transform: uppercase;
   }
   .text-block :global(h2 + h3) {
@@ -406,50 +786,104 @@ const [overview, ...sections] = blocks;
     font-size: 22px;
     font-weight: 700;
     line-height: 1.18;
-    letter-spacing: -.02em;
+    letter-spacing: -0.02em;
   }
-  .overview :global(h2) { font-size: clamp(30px, 3.4vw, 44px); font-weight: 800; }
-  .prose :global(p), .prose :global(ul), .prose :global(ol) { margin: 0 0 12px; }
-  .prose :global(li + li) { margin-top: 6px; }
-  .prose :global(ul), .prose :global(ol) { padding-inline-start: 20px; }
-  .prose :global(img) { display: block; height: auto; }
-  .prose :global(a) { color: var(--ink); text-decoration: underline; text-underline-offset: 3px; }
+  .overview :global(h2) {
+    font-size: clamp(30px, 3.4vw, 44px);
+    font-weight: 800;
+  }
+  .prose :global(p),
+  .prose :global(ul),
+  .prose :global(ol) {
+    margin: 0 0 12px;
+  }
+  .prose :global(li + li) {
+    margin-top: 6px;
+  }
+  .prose :global(ul),
+  .prose :global(ol) {
+    padding-inline-start: 20px;
+  }
+  .prose :global(img) {
+    display: block;
+    height: auto;
+  }
+  .prose :global(a) {
+    color: var(--ink);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
 
-  .testimonial { border-top: 1px solid var(--rule); padding-top: clamp(26px, 5vw, 64px); }
+  .testimonial {
+    border-top: 1px solid var(--rule);
+    padding-top: clamp(26px, 5vw, 64px);
+  }
   blockquote {
     max-width: 27ch;
     margin: 0;
     font-size: clamp(23px, 3vw, 38px);
     font-weight: 800;
     line-height: 1.1;
-    letter-spacing: -.02em;
+    letter-spacing: -0.02em;
   }
-  .testimonial figcaption { margin-top: 18px; color: var(--muted); }
+  .testimonial figcaption {
+    margin-top: 18px;
+    color: var(--muted);
+  }
 
-  .related h2 { margin-bottom: 24px; text-align: center; }
-  .related-grid { row-gap: 26px; }
-  .related-card { display: block; border-top: 1px solid var(--rule); }
-  .related-card img { display: block; width: 100%; aspect-ratio: 4 / 3; object-fit: cover; }
+  .related h2 {
+    margin-bottom: 24px;
+    text-align: center;
+  }
+  .related-grid {
+    row-gap: 26px;
+  }
+  .related-card {
+    display: block;
+    border-top: 1px solid var(--rule);
+  }
+  .related-card img {
+    display: block;
+    width: 100%;
+    aspect-ratio: 4 / 3;
+    object-fit: cover;
+  }
   .related-card h3 {
     display: flex;
     justify-content: space-between;
     gap: 12px;
     margin: 12px 0 4px;
     font-size: 22px;
-    letter-spacing: -.015em;
+    letter-spacing: -0.015em;
   }
-  .related-card:hover h3 { text-decoration: underline; text-underline-offset: .14em; }
-  main { padding-bottom: var(--section-space); }
+  .related-card:hover h3 {
+    text-decoration: underline;
+    text-underline-offset: 0.14em;
+  }
+  main {
+    padding-bottom: var(--section-space);
+  }
 
   @media (min-width: 1000px) {
-    .testimonial > div { grid-column: span 2; }
+    .testimonial > div {
+      grid-column: span 2;
+    }
   }
   @media (max-width: 999px) {
-    main { --section-columns: repeat(2, minmax(0, 1fr)); }
+    main {
+      --section-columns: repeat(2, minmax(0, 1fr));
+    }
   }
   @media (max-width: 809px) {
-    main { --section-columns: minmax(0, 1fr); }
-    .project-lead.has-media { grid-template-columns: minmax(0, 1fr); row-gap: 22px; }
-    .testimonial { row-gap: 16px; }
+    main {
+      --section-columns: minmax(0, 1fr);
+    }
+    .project-lead.has-media {
+      grid-template-columns: minmax(0, 1fr);
+      row-gap: 22px;
+    }
+    .testimonial {
+      row-gap: 16px;
+    }
   }
 </style>

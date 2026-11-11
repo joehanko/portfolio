@@ -47,6 +47,10 @@ content:
         type: image
         options:
           extensions: [jpg, jpeg, png, webp]
+      - name: heroModel
+        label: Hero 3D model path
+        type: string
+        description: Optional path to a GLB file in the site's public models folder.
       - name: coverAlt
         label: Hero image description
         type: string
