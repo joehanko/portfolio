@@ -1,4 +1,7 @@
 ---
+import { siGithub } from "simple-icons";
+import "../styles/editorial.css";
+
 const files = import.meta.glob("../content/projects/*.md", { eager: true });
 
 const projects = Object.entries(files)
@@ -7,92 +10,98 @@ const projects = Object.entries(files)
     ...module.frontmatter,
     slug: path.split("/").pop().replace(".md", ""),
   }));
-
-const featured = projects.find((project) => project.slug === "av-bay");
-const otherProjects = projects.filter((project) => project !== featured);
-
-import { siGithub } from "simple-icons";
-
 ---
 
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="description" content="Engineering projects by Joe Hanko, including Dirac Delta rocket avionics and the MACK-10 tensile tester." />
+    <meta
+      name="description"
+      content="Engineering projects by Joe Hanko, including Dirac Delta rocket avionics and the MACK-10 tensile tester."
+    />
     <title>Joe Hanko — Engineering Projects</title>
   </head>
-
   <body>
     <div class="container">
       <header class="site-header">
         <a href="/" class="brand">Joe Hanko</a>
-        <nav aria-label="Main navigation">
-          <a href="#work">Projects</a>
+        <nav class="site-nav" aria-label="Main navigation">
+          <a href="/projects/">Projects</a>
           <a href="#about">About</a>
           <a href="https://github.com/joehanko" class="github-link">
-  <svg viewBox="0 0 24 24" width="16" height="16"
-       fill="currentColor" aria-hidden="true">
-    <path d={siGithub.path} />
-  </svg>
-  GitHub
-</a>
+            <svg
+              viewBox="0 0 24 24"
+              width="16"
+              height="16"
+              fill="currentColor"
+              aria-hidden="true"
+            >
+              <path d={siGithub.path}></path>
+            </svg>
+            GitHub
+          </a>
         </nav>
       </header>
 
       <main>
         <section class="hero" aria-labelledby="page-title">
-          <p class="eyebrow">Mechanical engineering · Project notes</p>
-          <h1 id="page-title">Engineering projects</h1>
-          <p class="intro">
-            I’m Joe Hanko, a mechanical engineering student. This site documents
-            my work on rocket avionics, ground software, and a desktop
-            tensile tester.
+          <p class="eyebrow hero-role">
+            <span aria-hidden="true">✹</span> Mechanical engineering student
           </p>
+          <h1 id="page-title">Engineering<br />projects</h1>
+          <p class="intro">
+            Projects in rocket avionics, ground software, and mechanical test
+            equipment.
+          </p>
+          <div class="hero-actions">
+            <a href="/projects/" class="action action-primary">View projects</a>
+            <a href="#about" class="action">About me</a>
+          </div>
         </section>
 
-        <section id="work" aria-label="Selected projects">
-          {featured && (
-            <article class:list={["featured", { "with-image": featured.cover }]}>
-              <div class="feature-copy">
-                <p class="eyebrow">Featured project <span>{featured.year}</span></p>
-                <h2>{featured.title}</h2>
-                <p class="feature-summary">{featured.summary}</p>
-                <a class="feature-link" href={`/projects/${featured.slug}/`}>View project <span aria-hidden="true">↗</span></a>
+        {
+          projects.length > 0 && (
+            <section id="work" aria-labelledby="work-title" class="work">
+              <div class="work-heading">
+                <h2 id="work-title">Projects</h2>
+                <a class="eyebrow all-projects" href="/projects/">
+                  All projects <span aria-hidden="true">↗</span>
+                </a>
               </div>
-              {featured.cover && (
-                <figure class="feature-figure">
-                  <img src={featured.cover} alt={featured.coverAlt || featured.title} />
-                  {featured.coverCaption && <figcaption>{featured.coverCaption}</figcaption>}
-                </figure>
-              )}
-            </article>
-          )}
-
-          {otherProjects.length > 0 && (
-            <section class="other-work" aria-labelledby="other-title">
-              <p class="eyebrow">Project index</p>
-              <h2 id="other-title">{featured ? "More projects" : "Selected projects"}</h2>
-              {otherProjects.map((project) => (
-                <article class="project-row">
-                  {project.cover && (
-                    <img src={project.cover} alt={project.coverAlt || project.title} loading="lazy" />
-                  )}
-                  <div>
-                    <p class="eyebrow">{project.category} <span>{project.year}</span></p>
-                    <h3><a href={`/projects/${project.slug}/`}>{project.title}</a></h3>
-                    <p class="project-summary">{project.summary}</p>
-                  </div>
-                  <a class="project-link" href={`/projects/${project.slug}/`} aria-label={`Read about ${project.title}`}>↗</a>
-                </article>
-              ))}
+              <div class="project-grid">
+                {projects.map((project) => (
+                  <article class="project">
+                    <a class="project-card" href={`/projects/${project.slug}/`}>
+                      {project.cover && (
+                        <div class="project-media">
+                          <img
+                            src={project.cover}
+                            alt={project.coverAlt || project.title}
+                            loading="lazy"
+                          />
+                        </div>
+                      )}
+                      <div class="project-copy">
+                        <h3>
+                          {project.title}
+                          <span aria-hidden="true">↗</span>
+                        </h3>
+                        <p class="eyebrow project-meta">
+                          {project.category} · {project.year}
+                        </p>
+                        <p class="project-summary">{project.summary}</p>
+                      </div>
+                    </a>
+                  </article>
+                ))}
+              </div>
             </section>
-          )}
-        </section>
+          )
+        }
 
         <section id="about" class="about" aria-labelledby="about-title">
-          <p class="eyebrow">About</p>
-          <h2 id="about-title">Joe Hanko</h2>
+          <h2 id="about-title">About</h2>
           <p>
             My background is in technology and software, and I’m studying
             mechanical engineering. I’m interested in test equipment and
@@ -102,96 +111,202 @@ import { siGithub } from "simple-icons";
         </section>
       </main>
 
-      <footer>
+      <footer class="site-footer">
         <span>© {new Date().getFullYear()} Joe Hanko</span>
-          <a href="https://github.com/joehanko" class="github-link">
-  <svg viewBox="0 0 24 24" width="16" height="16"
-       fill="currentColor" aria-hidden="true">
-    <path d={siGithub.path} />
-  </svg>
-  GitHub
-</a>      </footer>
+        <a href="https://github.com/joehanko" class="github-link">
+          <svg
+            viewBox="0 0 24 24"
+            width="16"
+            height="16"
+            fill="currentColor"
+            aria-hidden="true"
+          >
+            <path d={siGithub.path}></path>
+          </svg>
+          GitHub
+        </a>
+      </footer>
     </div>
   </body>
 </html>
 
 <style>
-  :global(*) { box-sizing: border-box; }
-  :global(body) {
+  h1,
+  h2,
+  h3 {
     margin: 0;
-    background: #fafaf8;
-    color: #222522;
-    font-family: Arial, Helvetica, sans-serif;
-    -webkit-font-smoothing: antialiased;
+    font-family: var(--display);
   }
-  :global(a) { color: inherit; text-decoration: none; }
-  :global(a:focus-visible) { outline: 2px solid currentColor; outline-offset: 5px; }
-  .container { width: min(100% - 3rem, 1160px); margin-inline: auto; }
-  .site-header, footer {
-    display: flex; justify-content: space-between; align-items: center;
-    flex-wrap: wrap; gap: 16px; padding: 25px 0; border-bottom: 1px solid #d8dcd5;
+
+  .hero {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding-block: clamp(76px, 10vw, 136px) clamp(85px, 12vw, 156px);
+    text-align: center;
   }
-  .github-link {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-}
-  .brand { font-size: 18px; font-weight: 700; }
-  .brand span { color: #456a59; }
-  nav { display: flex; gap: clamp(15px, 3vw, 32px); font-size: 13px; color: #4b554e; }
-  nav a:hover, footer a:hover { text-decoration: underline; text-underline-offset: 4px; }
-  .hero { padding: clamp(52px, 9vw, 110px) 0 clamp(46px, 7vw, 78px); }
-  .eyebrow {
-    margin: 0; font-size: 11px; line-height: 1.55; letter-spacing: .12em;
-    text-transform: uppercase; font-weight: 700; color: #456354;
+
+  .hero-role {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #2e2e2e;
+    font-size: 13px;
+    font-weight: 600;
   }
-  h1, h2, h3 { margin: 0; font-family: Georgia, "Times New Roman", serif; font-weight: 400; }
-  h1 { font-size: clamp(42px, 7vw, 88px); line-height: 1.04; letter-spacing: -.055em; margin: 14px 0 18px; }
-  .intro { max-width: 55ch; margin: 0; font-size: clamp(17px, 2vw, 20px); line-height: 1.65; color: #505751; }
-  .featured {
-    display: grid; overflow: hidden; border: 1px solid #263a31; border-radius: 5px;
-    color: #f8f8f1; background: #20332a;
+
+  .hero-role span {
+    color: var(--accent-strong);
+    font-size: 16px;
+    line-height: 1;
   }
-  .featured.with-image { grid-template-columns: minmax(0, 1fr) minmax(0, 1.06fr); }
-  .feature-copy { padding: clamp(24px, 5vw, 56px); align-self: center; }
-  .feature-copy .eyebrow { color: #c5d7c8; }
-  .eyebrow span { margin-inline-start: .65em; }
-  .feature-copy h2 { margin-top: 15px; font-size: clamp(34px, 5vw, 58px); line-height: 1.07; letter-spacing: -.035em; }
-  .feature-summary { max-width: 44ch; color: #e0e8df; line-height: 1.65; margin: 17px 0 25px; }
-  .feature-link {
-    display: inline-flex; align-items: center; gap: 20px; padding: 11px 15px;
-    border: 1px solid #b1c9b8; border-radius: 3px; font-size: 14px; font-weight: 700;
+
+  h1 {
+    margin-block: 24px 32px;
+    font-size: clamp(34px, 4.3vw, 58px);
+    font-weight: 900;
+    line-height: 0.95;
+    letter-spacing: -0.028em;
+    text-transform: uppercase;
   }
-  .feature-link:hover { color: #20332a; background: #e0e8df; }
-  .feature-figure { margin: 0; display: grid; grid-template-rows: 1fr auto; background: #fff; color: #505751; }
-  .feature-figure img { display: block; width: 100%; height: 100%; min-height: 260px; max-height: 440px; object-fit: contain; }
-  .feature-figure figcaption { padding: 10px 16px; border-top: 1px solid #e3e7df; font-size: 12px; line-height: 1.5; }
-  .other-work, .about { margin-top: clamp(46px, 8vw, 94px); }
-  .other-work h2, .about h2 { font-size: clamp(30px, 4vw, 45px); margin: 8px 0 20px; letter-spacing: -.025em; }
-  .project-row {
-    display: flex; align-items: center; gap: clamp(14px, 3vw, 32px);
-    border-top: 1px solid #d8dcd5; padding: 23px 0;
+
+  .intro,
+  .about p {
+    max-width: 410px;
+    margin: 0;
+    color: var(--muted);
+    font-size: 16px;
+    line-height: 1.55;
   }
-  .project-row img { width: clamp(78px, 16vw, 160px); aspect-ratio: 4 / 3; object-fit: contain; background: #f0f2ed; }
-  .project-row h3 { font-size: clamp(23px, 3vw, 34px); margin: 5px 0 9px; }
-  .project-row h3 a:hover { text-decoration: underline; text-underline-offset: 4px; }
-  .project-summary { max-width: 60ch; color: #505751; line-height: 1.6; margin: 0; }
-  .project-link {
-    display: grid; place-items: center; flex: 0 0 42px; height: 42px; margin-left: auto;
-    border: 1px solid #c5cdc5; border-radius: 50%; font-size: 18px; color: #385547;
+
+  .hero-actions {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 18px;
   }
-  .project-link:hover { background: #e8eee7; }
-  .about { border-top: 1px solid #d8dcd5; padding: 28px 0 48px; }
-  .about p:last-child { max-width: 58ch; color: #505751; line-height: 1.7; }
-  footer { border-top: 1px solid #d8dcd5; border-bottom: 0; font-size: 13px; color: #505751; }
-  @media (max-width: 720px) {
-    .featured.with-image { grid-template-columns: 1fr; }
-    .feature-figure img { min-height: 0; max-height: 320px; }
+
+  .action {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 42px;
+    padding-inline: 20px;
+    border: 1px solid var(--ink);
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
   }
-  @media (max-width: 460px) {
-    .container { width: calc(100% - 2rem); }
-    .project-row { flex-wrap: wrap; align-items: start; }
-    .project-row img { width: 100%; max-height: 180px; }
-    .project-row > div { flex: 1; min-width: 0; }
+
+  .action-primary {
+    color: var(--paper);
+    background: var(--ink);
+  }
+  .action:hover {
+    color: var(--ink);
+    background: var(--accent);
+  }
+
+  .work-heading {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  .all-projects:hover {
+    text-decoration: underline;
+    text-underline-offset: 4px;
+  }
+
+  .work {
+    border-top: 1px solid var(--rule);
+    padding-top: clamp(34px, 5vw, 70px);
+  }
+  h2 {
+    font-size: clamp(28px, 3.4vw, 44px);
+    font-weight: 800;
+    line-height: 1;
+    letter-spacing: -0.022em;
+  }
+
+  .project-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-items: start;
+    column-gap: var(--grid-gap);
+    row-gap: 44px;
+    margin-top: 32px;
+  }
+
+  .project {
+    min-width: 0;
+  }
+  .project-card {
+    display: block;
+  }
+  .project-media {
+    background: var(--panel);
+  }
+  .project-media img {
+    display: block;
+    width: 100%;
+    aspect-ratio: 4 / 3;
+    object-fit: cover;
+  }
+  .project-copy {
+    padding-top: 15px;
+  }
+  .project-card:not(:has(.project-media)) {
+    border-top: 1px solid var(--rule);
+  }
+  .project h3 {
+    display: flex;
+    justify-content: space-between;
+    gap: 14px;
+    margin-bottom: 6px;
+    font-size: 19px;
+    font-weight: 800;
+    line-height: 1.2;
+    letter-spacing: -0.015em;
+  }
+
+  .project h3 span {
+    color: var(--muted);
+  }
+  .project-card:hover h3 {
+    text-decoration: underline;
+    text-underline-offset: 0.16em;
+  }
+  .project-meta {
+    color: #626262;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+  }
+  .project-summary {
+    max-width: 51ch;
+    margin: 9px 0 0;
+    color: var(--muted);
+    font-size: 15px;
+    line-height: 1.55;
+  }
+
+  .about {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    align-items: start;
+    gap: var(--grid-gap);
+    margin-block: var(--section-space);
+    padding: clamp(25px, 5vw, 60px);
+    background: var(--panel);
+  }
+
+  @media (max-width: 760px) {
+    .project-grid,
+    .about {
+      grid-template-columns: 1fr;
+    }
   }
 </style>

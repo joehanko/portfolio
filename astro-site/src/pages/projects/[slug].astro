@@ -1,29 +1,57 @@
 ---
+import { siGithub } from "simple-icons";
+import { ELEMENT_NODE, TEXT_NODE, parse, renderSync } from "ultrahtml";
+import "../../styles/editorial.css";
+
 export function getStaticPaths() {
   const files = import.meta.glob("../../content/projects/*.md", { eager: true });
-
-  return Object.entries(files)
+  const entries = Object.entries(files)
     .sort(([a], [b]) => a.localeCompare(b))
-    .map(([path, project], index) => ({
-      params: { slug: path.split("/").pop().replace(".md", "") },
-      props: { project, projectNumber: String(index + 1).padStart(2, "0") },
-    }));
+    .map(([path, project]) => ({ slug: path.split("/").pop().replace(".md", ""), project }));
+
+  return entries.map(({ slug, project }) => ({
+    params: { slug },
+    props: {
+      project,
+      related: entries.filter((entry) => entry.slug !== slug).slice(0, 3).map((entry) => ({
+        slug: entry.slug,
+        ...entry.project.frontmatter,
+      })),
+    },
+  }));
 }
 
-const { project, projectNumber } = Astro.props;
-const { frontmatter, Content } = project;
-const { title, category, year, summary, cover, coverAlt, coverCaption } = frontmatter;
-const highlights = Array.isArray(frontmatter.highlights) ? frontmatter.highlights.filter((item) => item?.value && item?.label).slice(0, 4) : [];
-const gallery = Array.isArray(frontmatter.gallery) ? frontmatter.gallery.filter(Boolean) : [];
+const { project, related } = Astro.props;
+const {
+  title, category, year, summary, cover, coverAlt, coverCaption,
+  client, duration, projectUrl, featureImage, closingImage, quote, quoteAttribution,
+} = project.frontmatter;
+const highlights = Array.isArray(project.frontmatter.highlights)
+  ? project.frontmatter.highlights.filter((item) => item?.value && item?.label).slice(0, 4)
+  : [];
+const gallery = Array.isArray(project.frontmatter.gallery) ? project.frontmatter.gallery.filter(Boolean) : [];
 const images = [
-  ...(cover ? [{ src: cover, alt: coverAlt || title, caption: coverCaption || "" }] : []),
+  ...(cover ? [{ src: cover, alt: coverAlt || title, caption: coverCaption }] : []),
   ...gallery.filter((src) => src !== cover).map((src, index) => ({
-    src, alt: `${title} project image ${index + 1}`, caption: "",
+    src, alt: `${title} project image ${index + 1}`,
   })),
 ];
-const [hero] = images;
-const hasGallery = images.length > 1;
-const headings = project.getHeadings().filter((heading) => heading.depth === 2);
+
+const [heroImage] = images;
+
+const markdown = parse(await project.compiledContent());
+const blocks = [];
+let current = [];
+for (const node of markdown.children) {
+  if (node.type === TEXT_NODE && !node.value.trim()) continue;
+  if (node.type === ELEMENT_NODE && node.name === "h2" && current.length > 0) {
+    blocks.push(current.map(renderSync).join("\n"));
+    current = [];
+  }
+  current.push(node);
+}
+if (current.length > 0) blocks.push(current.map(renderSync).join("\n"));
+const [overview, ...sections] = blocks;
 ---
 
 <html lang="en">
@@ -36,227 +64,392 @@ const headings = project.getHeadings().filter((heading) => heading.depth === 2);
 
   <body>
     <div class="container">
-      <header>
-        <a href="/" class="brand">Joe Hanko<span>.</span></a>
-        <a href="/#work" class="back">← All projects</a>
+      <header class="site-header">
+        <a href="/" class="brand">© Joe Hanko</a>
+        <nav class="site-nav" aria-label="Main navigation">
+          <a href="/projects/">Projects</a>
+          <a href="/#about">About</a>
+          <a href="https://github.com/joehanko" class="github-link">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" aria-hidden="true">
+              <path d={siGithub.path} />
+            </svg>
+            GitHub
+          </a>
+        </nav>
       </header>
 
       <main>
-        <section class="intro">
-          <div class="metadata">
-            <span>{projectNumber} / {category}</span>
-            <span>{year}</span>
+        <section class:list={["project-lead", { "has-media": heroImage }]} aria-labelledby="project-title">
+          <div class="intro">
+            <p class="eyebrow metadata">{category} · {year}</p>
+            <h1 id="project-title">{title}</h1>
+            <p class="summary">{summary}</p>
+            {projectUrl && <a class="project-action" href={projectUrl}>Live site</a>}
+            <section id="project-details" class="details" aria-label="Project details">
+              {overview && (
+                <div class="overview prose">
+                  <p class="eyebrow">Overview</p>
+                  <Fragment set:html={overview} />
+                </div>
+              )}
+              <div>
+                <dl class="facts">
+                  {client && <div><dt class="eyebrow">Client</dt><dd>{client}</dd></div>}
+                  <div><dt class="eyebrow">Scope</dt><dd>{category}</dd></div>
+                  <div><dt class="eyebrow">Year</dt><dd>{year}</dd></div>
+                  {duration && <div><dt class="eyebrow">Duration</dt><dd>{duration}</dd></div>}
+                </dl>
+                {highlights.length > 0 && (
+                  <dl class="highlights" aria-label="Project highlights">
+                    {highlights.map(({ value, label }) => (
+                      <div><dt>{value}</dt><dd>{label}</dd></div>
+                    ))}
+                  </dl>
+                )}
+              </div>
+
+            </section>
           </div>
-          <h1>{title}</h1>
-          <p class="summary">{summary}</p>
+
+          {heroImage && (
+            <section class="project-carousel" aria-label="Project images">
+              <figure>
+                <a class="carousel-image" href={heroImage.src} target="_blank" rel="noopener"
+                   aria-label="Enlarge selected image">
+                  <img src={heroImage.src} alt={heroImage.alt} fetchpriority="high" />
+                </a>
+                <figcaption hidden={!heroImage.caption}>{heroImage.caption}</figcaption>
+              </figure>
+              {images.length > 1 && (
+                <ul class="carousel-thumbnails" aria-label="Choose a project image">
+                  {images.map((image, index) => (
+                    <li>
+                      <a class="carousel-thumbnail" href={image.src} data-alt={image.alt} data-caption={image.caption || ""}
+                         aria-label={`Show image ${index + 1} of ${images.length}`}
+                         aria-current={index === 0 ? "true" : undefined}>
+                        <img src={image.src} alt="" loading="lazy" />
+                      </a>
+                    </li>
+                  ))}
+                </ul>
+              )}
+              <dialog class="image-lightbox" aria-label="Enlarged project image">
+                <form method="dialog">
+                  <button type="submit" class="lightbox-close" aria-label="Close image" autofocus>×</button>
+                </form>
+                <img class="lightbox-image" alt="" />
+              </dialog>
+            </section>
+          )}
         </section>
 
-        {hero && (
-          <section class="project-media" id="project-images" aria-label="Project images">
-            <figure class="cover-frame">
-              <a class="cover-link" href={hero.src} target="_blank" rel="noopener" aria-label="Open full-size image in a new tab">
-                <img class="cover" src={hero.src} alt={hero.alt} fetchpriority="high" />
-              </a>
-              <figcaption hidden={!hero.caption}>{hero.caption}</figcaption>
-            </figure>
+        {featureImage && (
+          <figure class="wide-image">
+            <img src={featureImage} alt={`${title} project detail`} loading="lazy" />
+          </figure>
+        )}
 
-            {hasGallery && (
-              <ul class="image-thumbnails" aria-label="Choose a project image">
-                {images.map((image, index) => (
-                  <li>
-                    <a class="image-thumbnail" href={image.src} data-image-alt={image.alt}
-                       data-image-caption={image.caption} aria-label={`Show image ${index + 1} of ${images.length}`}
-                       aria-current={index === 0 ? "true" : undefined}>
-                      <img src={image.src} alt="" loading="lazy" />
-                    </a>
-                  </li>
-                ))}
-              </ul>
-            )}
+        {sections.length > 0 && (
+          <div class="text-blocks">
+            {sections.map((section) => (
+              <section class="text-block prose"><Fragment set:html={section} /></section>
+            ))}
+          </div>
+        )}
+
+        {quote && (
+          <figure class="testimonial">
+            <p class="eyebrow">Testimonial</p>
+            <div>
+              <blockquote>{quote}</blockquote>
+              {quoteAttribution && <figcaption>{quoteAttribution}</figcaption>}
+            </div>
+          </figure>
+        )}
+
+        {closingImage && (
+          <figure class="wide-image">
+            <img src={closingImage} alt={`${title} project closing image`} loading="lazy" />
+          </figure>
+        )}
+
+        {related.length > 0 && (
+          <section class="related" aria-labelledby="related-title">
+            <h2 class="eyebrow" id="related-title">More projects</h2>
+            <div class="related-grid">
+              {related.map((item) => {
+                const image = item.cover || (Array.isArray(item.gallery) && item.gallery.find(Boolean));
+                return (
+                  <a class="related-card" href={`/projects/${item.slug}/`}>
+                    {image && <img src={image} alt={item.coverAlt || item.title} loading="lazy" />}
+                    <h3>{item.title}<span aria-hidden="true">↗</span></h3>
+                    <p class="eyebrow">{item.category}</p>
+                  </a>
+                );
+              })}
+            </div>
           </section>
         )}
-
-        {highlights.length > 0 && (
-          <ul class="highlights" aria-label="Project highlights">
-            {highlights.map((item) => (
-              <li class="highlight">
-                <p class="highlight-value">{item.value}</p>
-                <p class="highlight-label">{item.label}</p>
-              </li>
-            ))}
-          </ul>
-        )}
-
-        <div class:list={["content-layout", { "with-contents": headings.length > 0 || hasGallery }]}>
-          {(headings.length > 0 || hasGallery) && (
-            <aside>
-              <nav aria-label="Project contents" class="contents">
-                <p class="eyebrow">In this project</p>
-                <ul>
-                  {hasGallery && <li><a href="#project-images">Images</a></li>}
-                  {headings.map((heading) => <li><a href={`#${heading.slug}`}>{heading.text}</a></li>)}
-                </ul>
-              </nav>
-            </aside>
-          )}
-          <article class="prose">
-            <Content />
-          </article>
-        </div>
-
-        <a href="/#work" class="bottom-link">← Back to selected work</a>
       </main>
 
-      <footer>
+      <footer class="site-footer">
         <span>© {new Date().getFullYear()} Joe Hanko</span>
-        <span>Engineering &amp; Technology</span>
+        <a href="/projects/">All projects ↗</a>
       </footer>
     </div>
   </body>
 </html>
 
 <script>
-  const media = document.querySelector("#project-images");
-  const coverLink = media?.querySelector<HTMLAnchorElement>(".cover-link");
-  const coverImage = coverLink?.querySelector("img");
-  const caption = media?.querySelector("figcaption");
-  let selected = media?.querySelector(".image-thumbnail[aria-current]");
+  const carousel = document.querySelector(".project-carousel");
+  const fullImageLink = carousel?.querySelector<HTMLAnchorElement>(".carousel-image");
+  const selectedImage = fullImageLink?.querySelector("img");
+  const caption = carousel?.querySelector("figcaption");
+  const lightbox = carousel?.querySelector("dialog");
+  const enlargedImage = lightbox?.querySelector("img");
+  const closeButton = lightbox?.querySelector("button");
 
-  if (media && coverLink && coverImage && caption) {
-    for (const thumbnail of media.querySelectorAll<HTMLAnchorElement>(".image-thumbnail")) {
+  if (fullImageLink && selectedImage && lightbox && enlargedImage && typeof lightbox.showModal === "function") {
+    fullImageLink.addEventListener("click", (event) => {
+      if (event.defaultPrevented || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+      event.preventDefault();
+      enlargedImage.src = fullImageLink.href;
+      enlargedImage.alt = selectedImage.alt;
+      lightbox.showModal();
+    });
+
+    lightbox.addEventListener("click", (event) => {
+      if (event.target !== closeButton) lightbox.close();
+    });
+
+    lightbox.addEventListener("close", () => {
+      enlargedImage.removeAttribute("src");
+      fullImageLink.focus({ preventScroll: true });
+    });
+  }
+  let selectedThumbnail = carousel?.querySelector(".carousel-thumbnail[aria-current]");
+
+  if (carousel && fullImageLink && selectedImage && caption) {
+    for (const thumbnail of carousel.querySelectorAll<HTMLAnchorElement>(".carousel-thumbnail")) {
       thumbnail.addEventListener("click", (event) => {
         if (event.defaultPrevented || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
         event.preventDefault();
 
-        coverLink.href = thumbnail.href;
-        coverImage.src = thumbnail.href;
-        coverImage.alt = thumbnail.dataset.imageAlt || "";
-        caption.textContent = thumbnail.dataset.imageCaption || "";
+        fullImageLink.href = thumbnail.href;
+        selectedImage.src = thumbnail.href;
+        selectedImage.alt = thumbnail.dataset.alt || "";
+        caption.textContent = thumbnail.dataset.caption || "";
         caption.hidden = !caption.textContent;
-        selected?.removeAttribute("aria-current");
+        selectedThumbnail?.removeAttribute("aria-current");
         thumbnail.setAttribute("aria-current", "true");
-        selected = thumbnail;
+        selectedThumbnail = thumbnail;
       });
     }
   }
 </script>
 
 <style>
-  :global(*) { box-sizing: border-box; }
-  :global(body) {
-    margin: 0;
-    background: #fafaf8;
-    color: #222522;
-    font-family: Arial, Helvetica, sans-serif;
-    -webkit-font-smoothing: antialiased;
+  .site-header { position: sticky; top: 0; z-index: 1; }
+  main {
+    --section-columns: repeat(3, minmax(0, 1fr));
+    --project-text-width: 43ch;
   }
-  :global(a) { color: inherit; text-decoration: none; }
-  :global(a:focus-visible) { outline: 2px solid currentColor; outline-offset: 5px; }
-  .container {
-    --column-gap: clamp(24px, 4vw, 56px);
-    --section-space: clamp(36px, 6vw, 68px);
-    width: min(100% - 3rem, 1160px); margin-inline: auto;
+  .text-blocks, .testimonial, .related-grid {
+    display: grid;
+    grid-template-columns: var(--section-columns);
+    column-gap: var(--grid-gap);
   }
-  header, footer {
-    display: flex; justify-content: space-between; align-items: center;
-    flex-wrap: wrap; gap: 16px; padding: 25px 0; border-bottom: 1px solid #d8dcd5;
-    font-size: 13px;
+  .project-lead { padding-top: clamp(34px, 4vw, 56px); }
+  .project-lead.has-media {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    column-gap: var(--grid-gap);
+    align-items: start;
   }
-  .brand { font-size: 18px; font-weight: 700; }
-  .brand span { color: #456a59; }
-  .back, .bottom-link { color: #385547; }
-  .back:hover, .bottom-link:hover { text-decoration: underline; text-underline-offset: 4px; }
-  .intro { padding: clamp(48px, 8vw, 96px) 0 clamp(28px, 5vw, 55px); }
-  .metadata {
-    display: flex; justify-content: space-between; gap: 16px;
-    color: #456354; font-size: 11px; font-weight: 700;
-    line-height: 1.5; letter-spacing: .12em; text-transform: uppercase;
-  }
-  h1, h2 { font-family: Georgia, "Times New Roman", serif; font-weight: 400; }
+  .project-lead:not(.has-media) .intro { max-width: 65ch; }
+  .metadata { color: #2e2e2e; }
   h1 {
-    max-width: 950px; margin: 18px 0; font-size: clamp(42px, 7vw, 88px);
-    line-height: 1.06; letter-spacing: -.045em;
+    margin: 8px 0 24px;
+    font-size: clamp(36px, 4.6vw, 58px);
+    font-weight: 900;
+    line-height: .95;
+    letter-spacing: -.028em;
   }
-  .summary { max-width: 63ch; margin: 0; font-size: clamp(17px, 2vw, 20px); line-height: 1.65; color: #505751; }
-  .cover-frame {
-    margin: 0; border: 1px solid #d8dcd5; border-radius: 5px;
-    overflow: hidden; background: #fff;
+  .summary { max-width: var(--project-text-width); margin: 0; color: var(--muted); font-size: 16px; line-height: 1.55; }
+  .project-action {
+    display: inline-flex;
+    align-items: center;
+    min-height: 42px;
+    margin-top: 24px;
+    padding-inline: 20px;
+    background: var(--accent);
+    color: var(--ink);
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
   }
-  .cover {
-    display: block; width: 100%; aspect-ratio: 16 / 10;
-    max-height: min(65svh, 620px); object-fit: contain;
+  .project-action:hover { color: var(--paper); background: var(--ink); }
+
+  figure { margin: 0; }
+  .carousel-image { display: block; cursor: zoom-in; }
+  .carousel-image img, .wide-image img {
+    display: block;
+    width: 100%;
+    max-height: min(65svh, 620px);
+    object-fit: contain;
+    background: var(--panel);
   }
-  figcaption {
-    padding: 12px 16px; border-top: 1px solid #d8dcd5;
-    font-size: 13px; line-height: 1.55; color: #505751;
+  .carousel-image img {
+    aspect-ratio: 16 / 10;
+    max-height: min(54svh, 480px);
+    object-fit: cover;
   }
-  .highlights {
-    display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 200px), 1fr));
-    gap: 1px; padding: 0; margin: 18px 0 0; list-style: none;
-    border: 1px solid #d8dcd5; border-radius: 5px; background: #d8dcd5; overflow: hidden;
-  }
-  .highlight { min-width: 0; padding: 21px 18px; background: #f0f3ed; }
-  .highlight-value {
-    font-family: Georgia, serif; font-size: clamp(20px, 2.4vw, 29px);
-    line-height: 1.2; margin: 0 0 7px; overflow-wrap: anywhere;
-  }
-  .highlight-label { margin: 0; font-size: 13px; line-height: 1.5; color: #505751; }
-  .content-layout {
-    display: grid; gap: var(--column-gap); margin-top: var(--section-space);
-    border-top: 1px solid #d8dcd5; padding: 36px 0 clamp(40px, 6vw, 72px);
-  }
-  @media (min-width: 761px) {
-    .content-layout.with-contents { grid-template-columns: minmax(0, 1fr) minmax(155px, 22%); }
-    .content-layout.with-contents .prose { grid-area: 1 / 1; }
-    .content-layout aside { grid-area: 1 / 2; border-left: 1px solid #d8dcd5; padding-inline-start: 18px; }
-  }
-  .contents { position: sticky; top: 25px; }
-  .eyebrow {
-    margin: 0 0 13px; color: #456354; font-size: 11px; line-height: 1.5;
-    font-weight: 700; text-transform: uppercase; letter-spacing: .12em;
-  }
-  .contents ul { list-style: none; margin: 0; padding: 0; }
-  .contents li { margin-bottom: 3px; }
-  .contents a { display: inline-block; padding: 5px 0; color: #385547; font-size: 14px; line-height: 1.4; }
-  .contents a:hover { text-decoration: underline; text-underline-offset: 4px; }
-  .prose { max-width: 72ch; font-size: 17px; line-height: 1.75; color: #404741; overflow-wrap: anywhere; }
-  .prose :global(h2) {
-    color: #222522; font-family: Georgia, "Times New Roman", serif; font-weight: 400;
-    font-size: clamp(28px, 3.5vw, 39px); line-height: 1.15; letter-spacing: -.025em;
-    margin: 43px 0 16px; padding-top: 25px; border-top: 1px solid #d8dcd5; scroll-margin-top: 24px;
-  }
-  .prose :global(h2:first-child) { margin-top: 0; padding-top: 0; border-top: 0; }
-  .prose :global(h3) { font-size: 18px; margin: 27px 0 10px; }
-  .prose :global(p) { margin: 0 0 18px; }
-  .prose :global(ul) { padding-left: 23px; }
-  .prose :global(li) { padding-left: 4px; margin-bottom: 10px; }
-  .prose :global(img) { display: block; max-width: 100%; height: auto; margin: 24px 0; }
-  .prose :global(a) { color: #385547; text-decoration: underline; text-underline-offset: 3px; }
-  .project-media { scroll-margin-top: 20px; }
-  .cover-link { display: block; cursor: zoom-in; }
-  .cover-link:focus-visible { outline-offset: -5px; }
-  .image-thumbnails {
-    display: flex; gap: 8px; margin: 0; padding: 10px 3px 5px;
+  .project-carousel figcaption { margin-top: 7px; color: var(--muted); font-size: 13px; line-height: 1.5; }
+  .carousel-thumbnails {
+    display: flex; gap: 8px; margin: 0; padding: 11px 4px 5px;
     overflow-x: auto; overscroll-behavior-x: contain; list-style: none;
   }
-  .image-thumbnails li { flex: 0 0 clamp(65px, 10vw, 108px); }
-  .image-thumbnail {
+  .carousel-thumbnails li { flex: 0 0 clamp(65px, 8vw, 98px); }
+  .carousel-thumbnail {
     position: relative; display: block; aspect-ratio: 4 / 3;
-    overflow: hidden; border: 2px solid transparent; border-radius: 5px; background: #e7ede6;
+    overflow: hidden; border: 2px solid transparent; background: var(--panel);
   }
-  .image-thumbnail:hover { border-color: #90a698; }
-  .image-thumbnail[aria-current="true"] { border-color: #385547; }
-  .image-thumbnail:focus-visible { outline-offset: 1px; }
-  .image-thumbnail img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
-  .bottom-link { display: inline-block; margin-bottom: 42px; font-size: 14px; }
-  footer { border-top: 1px solid #d8dcd5; border-bottom: 0; color: #505751; }
-  @media (max-width: 760px) {
-    .contents { position: static; border-bottom: 1px solid #d8dcd5; padding-bottom: 18px; }
-    .contents ul { display: flex; flex-wrap: wrap; column-gap: 16px; }
+  .carousel-thumbnail:hover { border-color: var(--muted); }
+  .carousel-thumbnail[aria-current="true"] { border-color: var(--accent-strong); }
+  .carousel-thumbnail:focus-visible { outline-offset: 1px; }
+  .carousel-thumbnail img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+
+  .image-lightbox {
+    max-width: calc(100% - 24px);
+    max-height: calc(100% - 24px);
+    margin: auto;
+    padding: 0;
+    border: 0;
+    background: #141414;
+    color: #fff;
+    overflow: hidden;
+    cursor: zoom-out;
   }
-  @media (max-width: 460px) {
-    .container { width: calc(100% - 2rem); }
-    .highlights { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-    .highlight { padding: 15px 12px; }
+  .image-lightbox::backdrop { background: rgb(12 12 12 / 85%); }
+  .lightbox-image { display: block; max-width: min(94vw, 1400px); max-height: 88svh; object-fit: contain; }
+  .lightbox-close {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    display: grid;
+    place-items: center;
+    width: 44px;
+    height: 44px;
+    padding: 0;
+    border: 1px solid #888;
+    border-radius: 50%;
+    background: #222;
+    color: #fff;
+    font: 26px/1 var(--body);
+    cursor: pointer;
+  }
+  .lightbox-close:hover { background: #444; }
+  .lightbox-close:focus-visible { outline: 2px solid #fff; outline-offset: 3px; }
+
+  .details {
+    display: grid;
+    gap: 18px;
+    margin-top: 24px;
+    padding-top: clamp(18px, 2.5vw, 30px);
+    border-top: 1px solid var(--rule);
+    scroll-margin-top: 90px;
+  }
+  .facts, .highlights { display: grid; gap: 14px; margin: 0; }
+  .facts { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .facts dd, .highlights dd { margin: 3px 0 0; }
+  .facts dd { font-size: 16px; font-weight: 700; }
+  .highlights { grid-template-columns: repeat(2, minmax(0, 1fr)); margin-top: 28px; }
+  .highlights dt { font-weight: 700; }
+  .highlights dd { color: var(--muted); font-size: 14px; line-height: 1.5; overflow-wrap: anywhere; }
+  .overview .eyebrow { margin-bottom: 8px; }
+
+  .wide-image, .text-blocks, .testimonial, .related { margin-top: var(--section-space); }
+  .text-blocks {
+    margin-top: clamp(30px, 4vw, 52px);
+    padding-top: 24px;
+    border-top: 1px solid var(--rule);
+    row-gap: clamp(30px, 4vw, 52px);
+  }
+
+  .prose { color: var(--muted); font-size: 16px; line-height: 1.65; overflow-wrap: anywhere; }
+  .text-block.prose { min-width: 0; font-size: 15px; line-height: 1.5; }
+  .text-block > :global(:is(h2, h3, p, ul, ol, blockquote)),
+  .overview > :global(:is(p, ul, ol, blockquote)) {
+    max-width: var(--project-text-width);
+  }
+  .prose :global(h2) {
+    color: var(--ink);
+    margin: 0 0 13px;
+    font-size: 22px;
+    font-weight: 700;
+    line-height: 1.18;
+    letter-spacing: -.02em;
+  }
+  .prose :global(h3) { margin: 18px 0 8px; color: var(--ink); font-size: 18px; }
+  .text-block :global(h2:has(+ h3)) {
+    margin: 0 0 8px;
+    color: #686868;
+    font-size: 12px;
+    font-weight: 600;
+    line-height: 1.4;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+  }
+  .text-block :global(h2 + h3) {
+    margin: 0 0 18px;
+    color: var(--ink);
+    font-size: 22px;
+    font-weight: 700;
+    line-height: 1.18;
+    letter-spacing: -.02em;
+  }
+  .overview :global(h2) { font-size: clamp(30px, 3.4vw, 44px); font-weight: 800; }
+  .prose :global(p), .prose :global(ul), .prose :global(ol) { margin: 0 0 12px; }
+  .prose :global(li + li) { margin-top: 6px; }
+  .prose :global(ul), .prose :global(ol) { padding-inline-start: 20px; }
+  .prose :global(img) { display: block; height: auto; }
+  .prose :global(a) { color: var(--ink); text-decoration: underline; text-underline-offset: 3px; }
+
+  .testimonial { border-top: 1px solid var(--rule); padding-top: clamp(26px, 5vw, 64px); }
+  blockquote {
+    max-width: 27ch;
+    margin: 0;
+    font-size: clamp(23px, 3vw, 38px);
+    font-weight: 800;
+    line-height: 1.1;
+    letter-spacing: -.02em;
+  }
+  .testimonial figcaption { margin-top: 18px; color: var(--muted); }
+
+  .related h2 { margin-bottom: 24px; text-align: center; }
+  .related-grid { row-gap: 26px; }
+  .related-card { display: block; border-top: 1px solid var(--rule); }
+  .related-card img { display: block; width: 100%; aspect-ratio: 4 / 3; object-fit: cover; }
+  .related-card h3 {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    margin: 12px 0 4px;
+    font-size: 22px;
+    letter-spacing: -.015em;
+  }
+  .related-card:hover h3 { text-decoration: underline; text-underline-offset: .14em; }
+  main { padding-bottom: var(--section-space); }
+
+  @media (min-width: 1000px) {
+    .testimonial > div { grid-column: span 2; }
+  }
+  @media (max-width: 999px) {
+    main { --section-columns: repeat(2, minmax(0, 1fr)); }
+  }
+  @media (max-width: 809px) {
+    main { --section-columns: minmax(0, 1fr); }
+    .project-lead.has-media { grid-template-columns: minmax(0, 1fr); row-gap: 22px; }
+    .testimonial { row-gap: 16px; }
   }
 </style>

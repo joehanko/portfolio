@@ -1,0 +1,111 @@
+@import url("https://api.fontshare.com/v2/css?f[]=switzer@400,500,600,700,800,900&display=swap");
+
+:root {
+  --paper: #faf9f5;
+  --ink: #0a0a0a;
+  --muted: #464646;
+  --rule: #d5d4ce;
+  --panel: #f0efe9;
+  --display: Switzer, Arial, sans-serif;
+  --body: var(--display);
+  --accent: #8eb9ea;
+  --accent-strong: #3266a5;
+  --gutter: clamp(20px, 2.25vw, 30px);
+  --grid-gap: clamp(10px, 1.2vw, 18px);
+  --section-space: clamp(46px, 8vw, 100px);
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--body);
+  -webkit-font-smoothing: antialiased;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+a:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 4px;
+}
+img {
+  max-width: 100%;
+}
+
+.container {
+  width: min(calc(100% - 2 * var(--gutter)), 1440px);
+  margin-inline: auto;
+}
+
+.site-header,
+.site-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 14px;
+  padding-block: 19px;
+  font-size: 13px;
+}
+
+.site-header {
+  min-height: 64px;
+  background: var(--panel);
+  box-shadow: 0 0 0 100vmax var(--panel);
+  clip-path: inset(0 -100vmax);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.025em;
+  text-transform: uppercase;
+}
+.site-header a:focus-visible {
+  outline-offset: 2px;
+}
+.site-footer {
+  min-height: 92px;
+  background: var(--ink);
+  color: var(--paper);
+  box-shadow: 0 0 0 100vmax var(--ink);
+  clip-path: inset(0 -100vmax);
+}
+.site-header a:hover,
+.site-footer a:hover {
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+
+.brand {
+  /* font-size: inherit; */
+  font-size: 1.6em;
+  font-weight: 500;
+  text-transform: none;
+}
+.site-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: clamp(14px, 3vw, 30px);
+}
+.github-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.eyebrow {
+  margin: 0;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.5;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}

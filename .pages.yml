@@ -33,6 +33,15 @@ content:
         label: Short introduction
         type: text
         required: true
+      - name: projectUrl
+        label: Live project URL
+        type: string
+      - name: client
+        label: Client
+        type: string
+      - name: duration
+        label: Duration
+        type: string
       - name: cover
         label: Hero image
         type: image
@@ -68,6 +77,19 @@ content:
             max: 8
           unique: true
           extensions: [jpg, jpeg, png, webp]
+      - name: featureImage
+        label: Full-width image above the project text
+        type: image
+      - name: quote
+        label: Testimonial quote
+        type: text
+      - name: quoteAttribution
+        label: Testimonial attribution
+        type: string
+      - name: closingImage
+        label: Full-width closing image
+        type: image
       - name: body
-        label: Case study
+        label: Project write-up
+        description: Use heading level 2 to start a text block. Add a heading level 3 directly below it for a bold subheading.
         type: rich-text
