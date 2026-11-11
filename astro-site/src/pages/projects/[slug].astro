@@ -210,7 +210,7 @@ const [overview, ...sections] = blocks;
                       camera-controls
                       touch-action="pan-y"
                       hidden
-                    ></model-viewer>
+                    />
                   )}
                   <figcaption hidden={!heroImage.caption}>
                     {heroImage.caption}
@@ -218,10 +218,15 @@ const [overview, ...sections] = blocks;
                 </figure>
                 {heroModel && (
                   <div class="model-controls">
-                    <button type="button" class="model-toggle" aria-pressed="false" hidden>
+                    <button
+                      type="button"
+                      class="model-toggle"
+                      aria-pressed="false"
+                      hidden
+                    >
                       View in 3D
                     </button>
-                    <p class="model-status" role="status"></p>
+                    <p class="model-status" role="status" />
                   </div>
                 )}
                 {images.length > 1 && (
@@ -404,7 +409,8 @@ const [overview, ...sections] = blocks;
   );
 
   const model = carousel?.querySelector<HTMLElement>("model-viewer");
-  const modelToggle = carousel?.querySelector<HTMLButtonElement>(".model-toggle");
+  const modelToggle =
+    carousel?.querySelector<HTMLButtonElement>(".model-toggle");
   const modelStatus = carousel?.querySelector(".model-status");
 
   let modelRequest = 0;
@@ -432,13 +438,15 @@ const [overview, ...sections] = blocks;
       modelToggle.disabled = true;
       modelStatus.textContent = "Loading 3D viewer…";
       try {
-        const viewerModule = "https://cdn.jsdelivr.net/npm/@google/model-viewer@4.1.0/dist/model-viewer.min.js";
+        const viewerModule =
+          "https://cdn.jsdelivr.net/npm/@google/model-viewer@4.1.0/dist/model-viewer.min.js";
         if (!customElements.get("model-viewer")) {
           await import(/* @vite-ignore */ viewerModule);
         }
         if (request !== modelRequest) return;
         const source = model.dataset.modelSrc;
-        if (source && !model.hasAttribute("src")) model.setAttribute("src", source);
+        if (source && !model.hasAttribute("src"))
+          model.setAttribute("src", source);
         fullImageLink.hidden = true;
         model.hidden = false;
         selectedThumbnail?.removeAttribute("aria-current");
@@ -447,7 +455,8 @@ const [overview, ...sections] = blocks;
         modelStatus.textContent = "Drag to rotate. Scroll or pinch to zoom.";
       } catch {
         if (request === modelRequest) {
-          modelStatus.textContent = "The 3D viewer couldn’t load. You can still browse the photos.";
+          modelStatus.textContent =
+            "The 3D viewer couldn’t load. You can still browse the photos.";
         }
       } finally {
         modelToggle.disabled = false;
@@ -457,7 +466,8 @@ const [overview, ...sections] = blocks;
       if (model.hidden) return;
       showPhoto();
       model.removeAttribute("src");
-      modelStatus.textContent = "The 3D model couldn’t load. You can still browse the photos.";
+      modelStatus.textContent =
+        "The 3D model couldn’t load. You can still browse the photos.";
     });
   }
 
@@ -579,8 +589,11 @@ const [overview, ...sections] = blocks;
     aspect-ratio: 16 / 10;
     max-height: min(54svh, 480px);
     background: var(--panel);
+    height: auto;
   }
-  .carousel-image[hidden], .carousel-model[hidden], .model-toggle[hidden] {
+  .carousel-image[hidden],
+  .carousel-model[hidden],
+  .model-toggle[hidden] {
     display: none;
   }
   .model-controls {
@@ -598,9 +611,17 @@ const [overview, ...sections] = blocks;
     font: 700 13px var(--body);
     cursor: pointer;
   }
-  .model-toggle:hover { border-color: var(--accent-strong); }
-  .model-toggle:disabled { cursor: wait; }
-  .model-status { margin: 0; color: var(--muted); font-size: 13px; }
+  .model-toggle:hover {
+    border-color: var(--accent-strong);
+  }
+  .model-toggle:disabled {
+    cursor: wait;
+  }
+  .model-status {
+    margin: 0;
+    color: var(--muted);
+    font-size: 13px;
+  }
   .project-carousel figcaption {
     margin-top: 7px;
     color: var(--muted);
