@@ -46,6 +46,17 @@ img {
   margin-inline: auto;
 }
 
+body > .container {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  min-height: 100dvh;
+}
+
+body > .container > main {
+  flex: 1 0 auto;
+}
+
 .site-header,
 .site-footer {
   display: flex;
@@ -59,13 +70,22 @@ img {
 
 .site-header {
   min-height: 64px;
-  background: var(--panel);
-  box-shadow: 0 0 0 100vmax var(--panel);
-  clip-path: inset(0 -100vmax);
+  position: relative;
+  z-index: 1;
+  isolation: isolate;
   font-size: 12px;
   font-weight: 700;
   letter-spacing: 0.025em;
   text-transform: uppercase;
+}
+.site-header::before {
+  position: absolute;
+  z-index: -1;
+  inset: 0;
+  background: var(--panel);
+  box-shadow: 0 0 0 100vmax var(--panel);
+  clip-path: inset(0 -100vmax);
+  content: "";
 }
 .site-header a:focus-visible {
   outline-offset: 2px;
@@ -91,15 +111,10 @@ img {
 }
 .site-nav {
   display: flex;
+  align-items: center;
   flex-wrap: wrap;
   gap: clamp(14px, 3vw, 30px);
 }
-.github-link {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-}
-
 .eyebrow {
   margin: 0;
   color: var(--muted);

@@ -21,6 +21,14 @@ content:
         label: Project title
         type: string
         required: true
+      - name: projectNumber
+        label: Project number
+        type: string
+        description: Use the discipline number followed by the project number, such as 01-01.
+      - name: tags
+        label: Skills
+        type: string
+        list: true
       - name: category
         label: Discipline
         type: string
@@ -95,5 +103,5 @@ content:
         type: image
       - name: body
         label: Project write-up
-        description: Use heading level 2 to start a text block. Add a heading level 3 directly below it for a bold subheading.
+        description: Use heading level 2 for Project overview, Design, Implementation, and Results and validation. Add a heading level 3 for a project-specific subheading.
         type: rich-text

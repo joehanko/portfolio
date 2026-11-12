@@ -1,0 +1,91 @@
+---
+import { ChevronDown, LayoutGrid } from "@lucide/astro";
+
+const files = import.meta.glob("../content/projects/*.md", { eager: true });
+const projects = Object.entries(files)
+  .sort(([a], [b]) => a.localeCompare(b))
+  .map(([path, project]) => ({
+    title: project.frontmatter.title,
+    number: project.frontmatter.projectNumber,
+    href: `/projects/${path.split("/").pop().replace(".md", "")}/`,
+  }));
+
+const currentPath = Astro.url.pathname.replace(/\/$/, "");
+const currentPage = (href: string) =>
+  currentPath === href.replace(/\/$/, "") ? "page" : undefined;
+---
+
+<details class="projects-dropdown">
+  <summary>Projects <ChevronDown size={14} strokeWidth={1.8} aria-hidden="true" /></summary>
+  <ul class="project-menu">
+    <li class="project-menu-index">
+      <a href="/" aria-current={currentPage("/")}>
+        <LayoutGrid size={15} strokeWidth={1.7} aria-hidden="true" />
+        All projects
+      </a>
+    </li>
+    {projects.map(({ href, title, number }) => (
+      <li>
+        <a href={href} aria-current={currentPage(href)}>
+          {number && <span class="project-number">#{number}</span>}
+          {title}
+        </a>
+      </li>
+    ))}
+  </ul>
+</details>
+
+<script>
+  for (const dropdown of document.querySelectorAll<HTMLDetailsElement>(".projects-dropdown")) {
+    document.addEventListener("click", (event) => {
+      if (dropdown.open && event.target instanceof Node && !dropdown.contains(event.target)) {
+        dropdown.open = false;
+      }
+    });
+
+    document.addEventListener("keydown", (event) => {
+      if (event.key !== "Escape" || !dropdown.open) return;
+      dropdown.open = false;
+      dropdown.querySelector("summary")?.focus();
+    });
+  }
+</script>
+
+<style>
+  .projects-dropdown { position: relative; }
+  summary {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    cursor: pointer;
+    list-style: none;
+  }
+  summary::-webkit-details-marker { display: none; }
+  details[open] summary :global(svg) { transform: rotate(180deg); }
+  summary:focus-visible { outline: 2px solid currentColor; outline-offset: 3px; }
+
+  .project-menu {
+    position: absolute;
+    z-index: 1;
+    inset-block-start: calc(100% + 10px);
+    inset-inline-end: 0;
+    width: min(220px, calc(100vw - 40px));
+    margin: 0;
+    padding: 6px;
+    list-style: none;
+    border: 1px solid var(--rule);
+    background: var(--paper);
+    box-shadow: 0 8px 20px rgb(0 0 0 / 9%);
+    letter-spacing: 0;
+    text-transform: none;
+  }
+  .project-menu a { display: flex; align-items: center; gap: 8px; padding: 9px 10px; font-weight: 500; }
+  .project-menu-index { margin-bottom: 5px; padding-bottom: 5px; border-bottom: 1px solid var(--rule); }
+  .project-menu-index a { font-weight: 800; }
+  .project-number { color: var(--muted); font-size: 11px; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .project-menu a:hover, .project-menu a[aria-current="page"] { background: var(--panel); }
+  @media (max-width: 480px) {
+    .projects-dropdown { position: static; }
+    .project-menu { inset-block-start: 100%; }
+  }
+</style>

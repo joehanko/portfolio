@@ -1,5 +1,11 @@
 ---
 title: Tensile Tester
+projectNumber: "02-01"
+tags:
+  - PCB Design
+  - Motion Control
+  - Force Measurement
+  - Embedded Systems
 category: Mechanical Design / Mechatronics
 year: "2026"
 summary: A compact electromechanical tensile tester with stepper motion, load-cell force measurement, and a custom controller PCB.
@@ -28,16 +34,21 @@ gallery:
 
 I designed and built the MACK-10, a compact electromechanical tensile tester. It brings together stepper-driven motion, load-cell force measurement, and embedded control on a custom PCB.
 
-## Mechanical and electrical design
+## Design
 
 ### Combining motion and force measurement
 
 - **Mechatronics integration.** Combined controlled linear motion with load-cell sensing in a desktop test machine.
-- **Embedded control.** Integrated the stepper drive, force measurement, and control electronics into the system.
 
-## Controller revision
+## Implementation
+
+### Integrating the controller electronics
+
+- **Embedded control.** Integrated the stepper drive, force measurement, and control electronics into the system.
+- **Circuit integration.** Combined power management, motor control, sensing, I²C peripherals, and expandable I/O on the smaller board.
+
+## Results and validation
 
 ### About half the board footprint
 
 - **PCB layout.** Redesigned the controller from V1 to V2, reducing the board footprint by about 50%.
-- **Circuit integration.** Combined power management, motor control, sensing, I²C peripherals, and expandable I/O on the smaller board.

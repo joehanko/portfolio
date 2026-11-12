@@ -1,6 +1,7 @@
 ---
-import { siGithub } from "simple-icons";
 import { ELEMENT_NODE, TEXT_NODE, parse, renderSync } from "ultrahtml";
+import SiteHeader from "../../components/SiteHeader.astro";
+import ProjectTags from "../../components/ProjectTags.astro";
 import "../../styles/editorial.css";
 
 export function getStaticPaths() {
@@ -18,20 +19,15 @@ export function getStaticPaths() {
     params: { slug },
     props: {
       project,
-      related: entries
-        .filter((entry) => entry.slug !== slug)
-        .slice(0, 3)
-        .map((entry) => ({
-          slug: entry.slug,
-          ...entry.project.frontmatter,
-        })),
     },
   }));
 }
 
-const { project, related } = Astro.props;
+const { project } = Astro.props;
 const {
   title,
+  projectNumber,
+  tags,
   category,
   year,
   summary,
@@ -94,25 +90,7 @@ const [overview, ...sections] = blocks;
 
   <body>
     <div class="container">
-      <header class="site-header">
-        <a href="/" class="brand">Joe Hanko</a>
-        <nav class="site-nav" aria-label="Main navigation">
-          <a href="/projects/">Projects</a>
-          <a href="/#about">About</a>
-          <a href="https://github.com/joehanko" class="github-link">
-            <svg
-              viewBox="0 0 24 24"
-              width="16"
-              height="16"
-              fill="currentColor"
-              aria-hidden="true"
-            >
-              <path d={siGithub.path}></path>
-            </svg>
-            GitHub
-          </a>
-        </nav>
-      </header>
+      <SiteHeader />
 
       <main>
         <section
@@ -120,9 +98,10 @@ const [overview, ...sections] = blocks;
           aria-labelledby="project-title"
         >
           <div class="intro">
-            <p class="eyebrow metadata">{category} · {year}</p>
+            <p class="eyebrow metadata">{projectNumber && `Project #${projectNumber} · `}{category} · {year}</p>
             <h1 id="project-title">{title}</h1>
             <p class="summary">{summary}</p>
+            <ProjectTags tags={tags} />
             {
               projectUrl && (
                 <a class="project-action" href={projectUrl}>
@@ -321,43 +300,10 @@ const [overview, ...sections] = blocks;
           )
         }
 
-        {
-          related.length > 0 && (
-            <section class="related" aria-labelledby="related-title">
-              <h2 class="eyebrow" id="related-title">
-                More projects
-              </h2>
-              <div class="related-grid">
-                {related.map((item) => {
-                  const image =
-                    item.cover ||
-                    (Array.isArray(item.gallery) && item.gallery.find(Boolean));
-                  return (
-                    <a class="related-card" href={`/projects/${item.slug}/`}>
-                      {image && (
-                        <img
-                          src={image}
-                          alt={item.coverAlt || item.title}
-                          loading="lazy"
-                        />
-                      )}
-                      <h3>
-                        {item.title}
-                        <span aria-hidden="true">↗</span>
-                      </h3>
-                      <p class="eyebrow">{item.category}</p>
-                    </a>
-                  );
-                })}
-              </div>
-            </section>
-          )
-        }
       </main>
 
       <footer class="site-footer">
         <span>© {new Date().getFullYear()} Joe Hanko</span>
-        <a href="/projects/">All projects ↗</a>
       </footer>
     </div>
   </body>
@@ -501,7 +447,7 @@ const [overview, ...sections] = blocks;
 </script>
 
 <style>
-  .site-header {
+  :global(.site-header) {
     position: sticky;
     top: 0;
     z-index: 1;
@@ -511,8 +457,7 @@ const [overview, ...sections] = blocks;
     --project-text-width: 43ch;
   }
   .text-blocks,
-  .testimonial,
-  .related-grid {
+  .testimonial {
     display: grid;
     grid-template-columns: var(--section-columns);
     column-gap: var(--grid-gap);
@@ -753,8 +698,7 @@ const [overview, ...sections] = blocks;
 
   .wide-image,
   .text-blocks,
-  .testimonial,
-  .related {
+  .testimonial {
     margin-top: var(--section-space);
   }
   .text-blocks {
@@ -852,35 +796,6 @@ const [overview, ...sections] = blocks;
     color: var(--muted);
   }
 
-  .related h2 {
-    margin-bottom: 24px;
-    text-align: center;
-  }
-  .related-grid {
-    row-gap: 26px;
-  }
-  .related-card {
-    display: block;
-    border-top: 1px solid var(--rule);
-  }
-  .related-card img {
-    display: block;
-    width: 100%;
-    aspect-ratio: 4 / 3;
-    object-fit: cover;
-  }
-  .related-card h3 {
-    display: flex;
-    justify-content: space-between;
-    gap: 12px;
-    margin: 12px 0 4px;
-    font-size: 22px;
-    letter-spacing: -0.015em;
-  }
-  .related-card:hover h3 {
-    text-decoration: underline;
-    text-underline-offset: 0.14em;
-  }
   main {
     padding-bottom: var(--section-space);
   }

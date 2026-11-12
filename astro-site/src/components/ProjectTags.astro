@@ -1,0 +1,56 @@
+---
+import { Box, CircuitBoard, Cpu, FlaskConical, Gauge, MoveHorizontal, Radio, Tag } from "@lucide/astro";
+
+interface Props {
+  tags?: string[];
+}
+
+const icons = new Map([
+  ["cad", Box],
+  ["pcb design", CircuitBoard],
+  ["embedded systems", Cpu],
+  ["bench testing", FlaskConical],
+  ["force measurement", Gauge],
+  ["motion control", MoveHorizontal],
+  ["telemetry", Radio],
+]);
+const tags = Array.isArray(Astro.props.tags)
+  ? [...new Set(Astro.props.tags.filter((tag) => typeof tag === "string").map((tag) => tag.trim()).filter(Boolean))]
+  : [];
+---
+
+{tags.length > 0 && (
+  <ul class="skill-tags" aria-label="Project skills">
+    {tags.map((tag) => {
+      const SkillIcon = icons.get(tag.toLowerCase()) || Tag;
+      return (
+        <li>
+          <SkillIcon size={18} strokeWidth={1.7} aria-hidden="true" />
+          <span>{tag}</span>
+        </li>
+      );
+    })}
+  </ul>
+)}
+
+<style>
+  .skill-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin: 12px 0 0;
+    padding: 0;
+    list-style: none;
+  }
+  .skill-tags li {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 8px;
+    background: #20262e;
+    color: #f5f7fa;
+    font-size: 12px;
+    line-height: 1.35;
+  }
+  .skill-tags li :global(svg) { flex-shrink: 0; color: #b9d7f8; }
+</style>
