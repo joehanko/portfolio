@@ -189,6 +189,8 @@ const [overview, ...sections] = blocks;
                       camera-controls
                       touch-action="pan-y"
                       hidden
+                      camera-orbit={Astro.params.slug === "av-bay" ? "120deg 65deg auto" : undefined}
+                      camera-controls
                     />
                   )}
                   <figcaption hidden={!heroImage.caption}>

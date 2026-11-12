@@ -15,6 +15,7 @@ coverAlt: CAD rendering of the cylindrical Dirac Delta avionics bay with the
   electronics visible through the side.
 coverCaption: CAD view of the Dirac Delta avionics bay and its internal
   electronics packaging.
+heroModel: /models/AV%20Bay%20Assembly%201.glb
 highlights:
   - value: Live Telemetry
     label: Rocket-to-ground telemetry between XIAO ESP32-S3 and C3 Microcontrollers, ESP-NOW LR (2.4GHz)
